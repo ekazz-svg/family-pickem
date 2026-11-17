@@ -196,6 +196,12 @@
     }
     if (!header) throw new Error('The sheet tab needs a header row that starts with “Away” in column A.');
     if (!games.length) throw new Error('No games found under the “Away / Home” header row.');
+    // The sheet keeps a column for everyone who ever plays. Once picks are in,
+    // a column with no picks at all means that person sat the week out, so
+    // they're left off this week instead of showing 0 wins. (Before anyone's
+    // picks are entered, everyone stays listed.)
+    const played = people.filter((p) => games.some((g) => g.picks[p.name]));
+    if (played.length) people.splice(0, people.length, ...played);
     people.forEach((p) => {
       const missing = games.filter((g) => !g.picks[p.name]);
       if (missing.length && missing.length < games.length)
