@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Family Pick'em</title>
+<meta name="description" content="Live standings for the family NFL pick'em league.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%88%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #6f6d68;
+    --line: #e1e0d9;
+    --ring: rgba(11, 11, 11, 0.10);
+    --accent: #2a78d6;
+    --accent-wash: rgba(42, 120, 214, 0.12);
+    --good: #0ca30c;
+    --good-ink: #006300;
+    --good-wash: rgba(12, 163, 12, 0.13);
+    --bad: #d03b3b;
+    --bad-ink: #b02a2a;
+    --bad-wash: rgba(208, 59, 59, 0.11);
+    --warn-wash: rgba(250, 178, 25, 0.20);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --ink: #f0efec;
+      --ink-2: #c3c2b7;
+      --muted: #96948d;
+      --line: #2c2c2a;
+      --ring: rgba(255, 255, 255, 0.10);
+      --accent: #3987e5;
+      --accent-wash: rgba(57, 135, 229, 0.20);
+      --good-ink: #2fbf2f;
+      --good-wash: rgba(12, 163, 12, 0.22);
+      --bad-ink: #ff7b7b;
+      --bad-wash: rgba(208, 59, 59, 0.24);
+      --warn-wash: rgba(250, 178, 25, 0.16);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #96948d;
+    --line: #2c2c2a; --ring: rgba(255,255,255,0.10); --accent: #3987e5; --accent-wash: rgba(57,135,229,0.20);
+    --good-ink: #2fbf2f; --good-wash: rgba(12,163,12,0.22); --bad-ink: #ff7b7b; --bad-wash: rgba(208,59,59,0.24);
+    --warn-wash: rgba(250,178,25,0.16); color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 16px 16px 48px; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .muted { color: var(--muted); }
+  .small { font-size: 13px; }
+  .good-ink { color: var(--good-ink); font-weight: 700; }
+  .bad-ink { color: var(--bad-ink); font-weight: 700; }
+
+  /* Top bar */
+  .top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 12px; }
+  .top h1 { margin: 0; font-size: 22px; line-height: 1.2; }
+  .top h1 .wk { color: var(--ink-2); font-weight: 500; }
+  .controls { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  .controls label { font-size: 14px; color: var(--ink-2); }
+  select, button {
+    font: inherit; font-size: 15px; color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; min-height: 36px;
+  }
+  button { cursor: pointer; }
+  button:disabled { opacity: .6; cursor: default; }
+  #updated { font-size: 13px; color: var(--muted); }
+
+  .banner { border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 14px; }
+  .banner p { margin: 0; }
+  .banner p + p { margin-top: 4px; }
+  #demo { background: var(--accent-wash); }
+  #errors { background: var(--warn-wash); }
+
+  .hero { padding: 4px 2px 12px; }
+  .hero h2 { margin: 0 0 4px; font-size: 26px; line-height: 1.2; }
+  .hero p { margin: 0; color: var(--ink-2); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--ring); border-radius: 12px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .card h2 { margin: 0 0 12px; font-size: 18px; }
+  .card h3 { margin: 16px 0 8px; font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-2); }
+  .card h3:first-of-type { margin-top: 0; }
+  .foot { margin: 12px 0 0; font-size: 13px; color: var(--ink-2); }
+
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  thead th { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; text-align: left; white-space: nowrap; }
+  thead th.num { text-align: right; }
+  tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+
+  .board .rank { color: var(--muted); width: 2ch; }
+  .board .who { font-weight: 600; white-space: nowrap; }
+  .board .rec strong { font-size: 18px; }
+  .board .stat { min-width: 150px; }
+  .board tr.is-out .who, .board tr.is-out .rec strong { color: var(--muted); }
+  .me-row { background: var(--accent-wash); }
+  .live-col { white-space: nowrap; font-size: 13px; }
+  .up { color: var(--good-ink); font-weight: 600; }
+  .down { color: var(--bad-ink); font-weight: 600; }
+  .badge { display: inline-block; font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .badge.good { background: var(--good-wash); color: var(--good-ink); }
+  .badge.alive { background: var(--accent-wash); color: var(--ink); }
+  .badge.out { color: var(--muted); padding-left: 0; }
+  .need { display: block; font-size: 13px; color: var(--ink-2); margin-top: 3px; }
+
+  /* Game cards */
+  .games { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .game { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--surface); }
+  .game.in { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .game header { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--ink-2); margin-bottom: 6px; }
+  .game.in .gstatus { color: var(--ink); font-weight: 600; }
+  .tag { font-size: 12px; background: var(--warn-wash); border-radius: 999px; padding: 0 8px; color: var(--ink); white-space: nowrap; }
+  .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--bad); margin-right: 6px; vertical-align: 1px; animation: pulse 1.6s infinite; }
+  @keyframes pulse { 50% { opacity: .3; } }
+  @media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
+  .side { padding: 6px 0; }
+  .side + .side { border-top: 1px solid var(--line); }
+  .team { display: flex; justify-content: space-between; align-items: baseline; font-size: 17px; font-weight: 600; }
+  .score { font-variant-numeric: tabular-nums; font-size: 20px; }
+  .side.lost .team { color: var(--muted); font-weight: 500; }
+  .side.leading .score { color: var(--good-ink); }
+  .mark { margin-left: 6px; }
+  .pickers { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; align-items: center; }
+  .pickers .count { margin-left: auto; font-size: 12px; color: var(--muted); }
+  .chip { font-size: 13px; padding: 1px 8px; border-radius: 999px; background: var(--page); border: 1px solid var(--line); }
+  .side.won .chip { background: var(--good-wash); border-color: transparent; }
+  .side.lost .chip { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--muted); }
+  .chip.me { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; font-weight: 700; }
+
+  .hero-num { margin: 0 0 8px; }
+  .hero-num strong { font-size: 32px; font-variant-numeric: tabular-nums; }
+
+  /* Full grid */
+  .grid { font-size: 14px; }
+  .grid th, .grid td { text-align: center; padding: 6px 6px; white-space: nowrap; }
+  .grid .gm { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 1; font-weight: 600; }
+  .grid .res { font-weight: 600; }
+  .grid tfoot th, .grid tfoot td { border-top: 2px solid var(--line); border-bottom: 0; }
+  .pick.ok { background: var(--good-wash); }
+  .pick.no { background: var(--bad-wash); color: var(--ink-2); }
+  .pick.ok span { color: var(--good-ink); }
+  .pick.no span { color: var(--bad-ink); }
+  .pick.up span { color: var(--good-ink); }
+  .pick.down span { color: var(--bad-ink); }
+  .me-col { box-shadow: inset 2px 0 0 var(--accent), inset -2px 0 0 var(--accent); }
+  thead .me-col { color: var(--accent); }
+
+  .notes ul { margin: 0; padding-left: 20px; font-size: 14px; }
+  .notes li + li { margin-top: 4px; }
+  footer { font-size: 12px; color: var(--muted); text-align: center; margin-top: 24px; }
+
+  @media (max-width: 560px) {
+    .hero h2 { font-size: 22px; }
+    .controls { margin-left: 0; width: 100%; }
+        th, td { padding: 8px 4px; }
+    .card { padding: 12px; }
+    .board .stat { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1><span id="league">Family Pick'em</span> <span class="wk" id="week"></span></h1>
+    <div class="controls">
+      <label for="me">I'm</label>
+      <select id="me" aria-label="Highlight my picks"></select>
+      <button id="refresh" type="button">Refresh</button>
+      <span id="updated"></span>
+    </div>
+  </div>
+  <div id="demo" class="banner" hidden><p><b>Demo.</b> <span id="demo-text"></span> Not connected to the Google Sheet yet.</p></div>
+  <div id="errors" class="banner" hidden></div>
+  <main id="main"><p class="muted">Loading…</p></main>
+  <footer>Scores update by themselves during games. Live scores from ESPN.</footer>
+</div>
+<script src="config.js"></script>
+<script src="demo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

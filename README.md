@@ -1,0 +1,55 @@
+# Family Pick'em live dashboard
+
+A one-page website that shows this week's standings, live scores, who picked what,
+and who can still win. It reads the picks from a tab in the Google Sheet and the
+scores from ESPN, and refreshes itself every minute while games are on.
+
+## Each week (about 5 minutes, after picks lock)
+
+1. Open the **Dashboard** tab in the Google Sheet.
+2. Change the number next to **Week**.
+3. Replace the game rows: **Away** team in column A, **Home** team in column B,
+   then each person's pick in their column. Team names, nicknames or
+   abbreviations all work (Ravens, Baltimore, BAL, Niners, Jags…).
+4. **Put the Monday night (tiebreaker) game in the last row.**
+5. Fill in everyone's tiebreaker guess on the **Tiebreaker** row.
+
+That's it. The page picks up changes within about 5 minutes (Google's delay).
+If something in the sheet can't be read, the page lists it under
+"Things to check in the sheet."
+
+## Tab layout
+
+| Row | What goes in it |
+|---|---|
+| `Week` | the week number, e.g. `11` |
+| `Tiebreaker rule` | `closest` (closest combined score wins) or `same winner` (right Monday winner first, then closest) |
+| `Tiebreaker total` | leave blank; only fill in if live scores are down and you need to settle the week |
+| `Away, Home, Winner override, Alex, Bailey, …` | header row: player names go across |
+| one row per game | leave **Winner override** blank unless live scores are down |
+| `Tiebreaker` | each person's guess for the Monday night combined score |
+
+`sheet-template.csv` is Week 10 in this layout. Import it into the sheet with
+**File → Import → Upload → Insert new sheet(s)**, then rename the tab **Dashboard**.
+
+## One-time setup
+
+1. In the sheet: **File → Share → Publish to web**. Choose the **Dashboard** tab,
+   choose **Comma-separated values (.csv)**, click **Publish**, and copy the link.
+2. In this repo, open `config.js`, click the pencil icon, paste the link between
+   the quotes on the `sheetCsvUrl` line, and commit.
+3. Repo **Settings → Pages**: Source = *Deploy from a branch*, Branch = `main`,
+   folder = `/ (root)`. Save. The page appears at
+   `https://<your-username>.github.io/<repo-name>/` within a minute or two.
+
+Until a sheet link is set, the page shows a Week 10 demo. Add `?demo` to the
+end of the address to see the demo any time.
+
+## Notes
+
+- Wins are counted from the actual scores, never from cell colors or a totals row.
+- A tied NFL game counts as a wrong pick for everyone.
+- "Still alive" checks every possible result of the games left (and the tiebreaker
+  rule) to see whether that person can still finish first.
+- Live scores come from ESPN's public scoreboard, which is free but unofficial.
+  If it stops working, use the **Winner override** column and the page still works.
