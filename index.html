@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Family Pick'em</title>
+<meta name="theme-color" content="#f9f9f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pick'em">
 <meta name="description" content="Live standings for the family NFL pick'em league.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%88%3C/text%3E%3C/svg%3E">
 <style>
@@ -165,6 +170,16 @@
   .season th, .season td { white-space: nowrap; }
   .season .wk-win { font-weight: 700; }
   .season th.gm { position: sticky; left: 0; background: var(--surface); text-align: left; }
+  details.finals { margin-top: 16px; }
+  details.finals summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px;
+    font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-2);
+    padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+  details.finals summary::-webkit-details-marker { display: none; }
+  details.finals .show { margin-left: auto; text-transform: none; letter-spacing: 0; color: var(--accent); }
+  details.finals .show::after { content: " ▾"; }
+  details.finals[open] .show { font-size: 0; }
+  details.finals[open] .show::after { content: "Hide ▴"; font-size: 14px; }
+  details.finals[open] summary { margin-bottom: 12px; }
   .notes ul { margin: 0; padding-left: 20px; font-size: 14px; }
   .notes li + li { margin-top: 4px; }
   footer { font-size: 12px; color: var(--muted); text-align: center; margin-top: 24px; }

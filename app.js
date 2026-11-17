@@ -182,7 +182,7 @@
     const rule = /same/i.test(settings['tiebreaker rule'] || '') ? 'same' : 'closest';
     const tbTotal = parseFloat(settings['tiebreaker total']);
     const weekWinner = (settings['week winner'] || '').split(/\s*(?:,|&|\band\b)\s*/i).filter(Boolean);
-    return { week: isNaN(week) ? null : week, rule, weekWinner, tbTotalOverride: isNaN(tbTotal) ? null : tbTotal, people: people.map((p) => p.name), games, guesses, warnings };
+    return { week: isNaN(week) ? null : week, rule, weekWinner, provisional: settings.provisional || '', tbTotalOverride: isNaN(tbTotal) ? null : tbTotal, people: people.map((p) => p.name), games, guesses, warnings };
   }
 
   // ── Live scores (ESPN public scoreboard) ─────────────────────
@@ -344,7 +344,7 @@
       winners = r.paths.filter((p) => p.clinched).map((p) => p.name);
       if (!winners.length) tied = r.paths.filter((p) => p.alive).map((p) => p.name);
     }
-    return { week: sheet.week, done, winners, tied, stats: r.stats };
+    return { week: sheet.week, done, winners, tied, stats: r.stats, provisional: /^y/i.test(sheet.provisional || '') };
   }
 
   // Finished weeks stored in the repo (listed in config.js). Loaded once.
@@ -452,7 +452,9 @@
     sel.innerHTML = opts.join('');
     if (me && !last.sheet.people.includes(me)) me = '';
 
+    const wasOpen = !!document.querySelector('details.finals[open]');
     $('#main').innerHTML = [renderHero(), renderBoard(), renderGames(), renderTiebreak(), renderSeason(), renderGrid(), renderWarnings()].join('');
+    if (wasOpen) document.querySelector('details.finals')?.setAttribute('open', '');
   }
 
   const chip = (name) => `<span class="chip${name === me ? ' me' : ''}">${esc(name)}</span>`;
@@ -569,9 +571,13 @@
     const next = games.filter((g) => g.state === 'pre').sort(byTime);
     const fin = games.filter((g) => g.state === 'post').sort((a, b) => byTime(b, a));
     const block = (title, list) => list.length ? `<h3>${title} <span class="muted">${list.length}</span></h3><div class="games">${list.map(gameCard).join('')}</div>` : '';
+    // Finished games fold away while anything is still to play, so the live game stays near the top.
+    const finals = !fin.length ? '' : live.length || next.length
+      ? `<details class="finals"><summary>Final <span class="muted">${fin.length}</span><span class="show">Show</span></summary><div class="games">${fin.map(gameCard).join('')}</div></details>`
+      : block('Final', fin);
     return `<section class="card">
       <h2>Games</h2>
-      ${block('Live now', live)}${block('Coming up', next)}${block('Final', fin)}
+      ${block('Live now', live)}${block('Coming up', next)}${finals}
       ${byes.length ? `<p class="foot">On bye: ${esc(listNames(byes.map(teamName)))}.</p>` : ''}
     </section>`;
   }
@@ -656,7 +662,8 @@
     }).sort((a, b) => b.pct - a.pct || b.W - a.W || a.name.localeCompare(b.name));
     const anyTie = weeks.some((w) => w.tied.length);
     const live = weeks.find((w) => !w.done);
-    const head = weeks.map((w) => `<th class="num">Wk ${w.week}${w.done ? '' : '*'}</th>`).join('');
+    const head = weeks.map((w) => `<th class="num">Wk ${w.week}${w.done ? '' : '*'}${w.provisional ? '†' : ''}</th>`).join('');
+    const prov = weeks.filter((w) => w.provisional).map((w) => w.week);
     const body = rows.map((r) => `<tr class="${r.name === me ? 'me-row' : ''}">
         <th class="who gm">${esc(r.name)}</th>
         <td class="num"><strong>${(r.pct * 100).toFixed(1)}%</strong></td>
@@ -669,7 +676,7 @@
         <thead><tr><th class="gm">Player</th><th class="num">Win %</th><th class="num">W-L</th><th class="num" title="Weeks won">🏆</th>${head}</tr></thead>
         <tbody>${body}</tbody>
       </table></div>
-      <p class="foot">Ranked by win %, so missing a week doesn't count against anyone. Every week is re-scored from the official final scores, not the sheet colors. 🏆 = won the week. A dot means the player didn't play that week.${live ? ` Wk ${live.week}* is still being played.` : ''}${anyTie ? ' <sup>*</sup> Tied for first, but the tiebreaker isn’t on record yet.' : ''}</p>
+      <p class="foot">Ranked by win %, so missing a week doesn't count against anyone. Every week is re-scored from the official final scores, not the sheet colors. 🏆 = won the week. A dot means the player didn't play that week.${live ? ` Wk ${live.week}* is still being played.` : ''}${anyTie ? ' <sup>*</sup> Tied for first, but the tiebreaker isn’t on record yet.' : ''}${prov.length ? ` † Wk ${prov.join(', ')} still needs to be double-checked against the sheet.` : ''}</p>
     </section>`;
   }
 
