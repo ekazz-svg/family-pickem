@@ -2,7 +2,7 @@
   'use strict';
 
   const CFG = Object.assign(
-    { sheetCsvUrl: '', season: 2026, leagueName: "Family Pick'em" },
+    { sheetCsvUrl: '', season: 2026, leagueName: "Family Pick'em", tieCountsAsWin: true },
     window.PICKEM_CONFIG || {}
   );
   const QS = new URLSearchParams(location.search);
@@ -59,8 +59,31 @@
     for (const [code, names] of Object.entries(TEAMS)) {
       if (k.includes(norm(names[0]))) return code; // "Ravens!" or "Balt Ravens"
     }
-    return null;
+    // Small typos: "Brocnos", "cowobys"
+    let best = null, bestD = 3, tie = false;
+    for (const [code, names] of Object.entries(TEAMS)) {
+      for (const n of names) {
+        const d = editDistance(k, norm(n));
+        if (d < bestD) { best = code; bestD = d; tie = false; }
+        else if (d === bestD && best !== code) tie = true;
+      }
+    }
+    return best && !tie && bestD <= (k.length > 5 ? 2 : 1) ? best : null;
   }
+  // Edit distance where swapping two neighboring letters counts as one typo.
+  function editDistance(a, b) {
+    const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+    for (let j = 1; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+    }
+    return d[a.length][b.length];
+  }
+
   const teamName = (c) => (TEAMS[c] ? TEAMS[c][0] : c);
 
   // ── Helpers ──────────────────────────────────────────────────
@@ -229,7 +252,7 @@
         const p = g.picks[name];
         if (g.state === 'post') {
           if (!p) continue;
-          if (g.winner && p === g.winner) s.w++; else s.l++;
+          if ((g.winner && p === g.winner) || (g.tie && CFG.tieCountsAsWin)) s.w++; else s.l++;
         } else {
           if (!p) continue;
           s.open++;
@@ -522,7 +545,7 @@
     else status = esc(kickoffText(g.date) || 'Not started');
     const side = (t, sc) => {
       const names = pickers(t);
-      const won = g.state === 'post' && g.winner === t;
+      const won = g.state === 'post' && (g.winner === t || (g.tie && CFG.tieCountsAsWin));
       const lost = g.state === 'post' && g.winner && g.winner !== t;
       const cls = won ? 'won' : lost ? 'lost' : lead === t ? 'leading' : '';
       const mark = won ? '<span class="mark good-ink" aria-label="won">✓</span>' : '';
@@ -594,7 +617,7 @@
         const t = g.picks[p];
         if (!t) return `<td class="${p === me ? 'me-col' : ''}"><span class="muted">–</span></td>`;
         let cls = 'pend', icon = '';
-        if (g.state === 'post') { const ok = g.winner === t; cls = ok ? 'ok' : 'no'; icon = ok ? '✓' : '✕'; }
+        if (g.state === 'post') { const ok = g.winner === t || (g.tie && CFG.tieCountsAsWin); cls = ok ? 'ok' : 'no'; icon = ok ? '✓' : '✕'; }
         else if (lead) { cls = lead === t ? 'up' : 'down'; icon = lead === t ? '▲' : '▼'; }
         return `<td class="pick ${cls}${p === me ? ' me-col' : ''}">${t}${icon ? ` <span aria-hidden="true">${icon}</span>` : ''}</td>`;
       }).join('');
