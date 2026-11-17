@@ -64,6 +64,7 @@ results either way. You can also ask Claude to do this step.
 ## Notes
 
 - Wins are counted from the actual scores, never from cell colors or a totals row.
+- The page opens in light mode. The moon button at the top switches to dark mode, and each phone remembers its own choice.
 - A tied NFL game counts as a wrong pick for everyone.
 - "Still alive" checks every possible result of the games left (and the tiebreaker
   rule) to see whether that person can still finish first.

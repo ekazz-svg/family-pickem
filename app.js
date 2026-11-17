@@ -438,7 +438,8 @@
     const errBox = $('#errors');
     if (last.fatal) {
       $('#week').textContent = '';
-      $('#main').innerHTML = `<section class="card"><h2>Couldn't load the picks</h2><p>${esc(last.fatal)}</p></section>`;
+      $('#hero').innerHTML = `<h2>Couldn't load the picks</h2><p class="sub">${esc(last.fatal)}</p>`;
+      $('#main').innerHTML = '';
       errBox.hidden = true;
       return;
     }
@@ -453,7 +454,8 @@
     if (me && !last.sheet.people.includes(me)) me = '';
 
     const wasOpen = !!document.querySelector('details.finals[open]');
-    $('#main').innerHTML = [renderHero(), renderBoard(), renderGames(), renderTiebreak(), renderSeason(), renderGrid(), renderWarnings()].join('');
+    $('#hero').innerHTML = renderHero();
+    $('#main').innerHTML = [renderBoard(), renderGames(), renderTiebreak(), renderSeason(), renderGrid(), renderWarnings()].join('');
     if (wasOpen) document.querySelector('details.finals')?.setAttribute('open', '');
   }
 
@@ -491,7 +493,13 @@
         if (pl.join() !== leaders.join()) sub += ` If the live scores hold, ${listNames(pl)} would be on top with ${pt}.`;
       }
     }
-    return `<section class="hero"><h2>${esc(headline)}</h2><p>${esc(sub)}</p></section>`;
+    const order = [...games].sort((a, b) => (new Date(a.date || 0) - new Date(b.date || 0)) || a.idx - b.idx);
+    const segs = order.map((g) => `<span class="seg ${g.state}" title="${esc(g.away)} @ ${esc(g.home)}"></span>`).join('');
+    const prog = `${done} of ${games.length} final${live ? ` · ${live} live` : ''}`;
+    const eyebrow = left === 0 ? 'Final results' : live ? 'Live now' : done === 0 ? 'Up next' : 'In progress';
+    return `<p class="eyebrow">${eyebrow}</p>
+      <h2>${esc(headline)}</h2><p class="sub">${esc(sub)}</p>
+      <div class="progress" role="img" aria-label="${esc(prog)}"><div class="segs">${segs}</div><span class="lbl">${esc(prog)}</span></div>`;
   }
 
   function statusCell(path, s) {
@@ -504,7 +512,7 @@
     if (path.needs.length && path.needs.length <= 4) need = `Needs ${listNames(path.needs.map(teamName))}${tbNote}`;
     else if (path.needs.length) need = `Needs ${path.needs.length} specific results${tbNote}`;
     else if (path.tbOnly) need = 'Needs to win the tiebreaker';
-    return `<span class="badge alive">● Still alive</span>${need ? `<span class="need">${esc(need)}</span>` : ''}`;
+    return `<span class="badge alive"><span class="dot" aria-hidden="true"></span>Still alive</span>${need ? `<span class="need">${esc(need)}</span>` : ''}`;
   }
 
   function renderBoard() {
@@ -519,7 +527,7 @@
       if (key !== prev) { rank = i + 1; prev = key; }
       const live = anyLive ? `<td class="num live-col">${s.upNow ? `<span class="up">▲${s.upNow}</span>` : ''}${s.downNow ? ` <span class="down">▼${s.downNow}</span>` : ''}${!s.upNow && !s.downNow ? '<span class="muted">–</span>' : ''}</td>` : '';
       return `<tr class="${s.name === me ? 'me-row ' : ''}${p.alive ? '' : 'is-out'}">
-        <td class="num rank">${rank}</td>
+        <td class="num rank"><span class="rk${rank === 1 ? ' r1' : ''}">${rank}</span></td>
         <td class="who">${esc(s.name)}</td>
         <td class="num rec"><strong>${s.w}</strong><span class="muted">-${s.l}</span></td>
         ${live}
@@ -553,7 +561,7 @@
       const mark = won ? '<span class="mark good-ink" aria-label="won">✓</span>' : '';
       const showScore = g.state !== 'pre' && sc != null && !g.manual;
       return `<div class="side ${cls}">
-        <div class="team"><span class="tname">${esc(teamName(t))}${mark}</span>${showScore ? `<span class="score">${sc}</span>` : ''}</div>
+        <div class="team"><span class="tname"><span class="abbr" aria-hidden="true">${esc(t)}</span>${esc(teamName(t))}${mark}</span>${showScore ? `<span class="score">${sc}</span>` : ''}</div>
         <div class="pickers">${names.length ? names.map(chip).join('') : '<span class="muted small">No one</span>'}<span class="count">${names.length}</span></div>
       </div>`;
     };
@@ -687,6 +695,29 @@
 
   // ── Wire up ──────────────────────────────────────────────────
   $('#refresh').addEventListener('click', load);
+
+  // Light by default; the toggle switches to dark and remembers it on this device.
+  const THEME_KEY = 'pickem.theme';
+  const ICONS = {
+    moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+    sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  };
+  function applyTheme(t) {
+    const dark = t === 'dark';
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    const btn = $('#theme');
+    const label = dark ? 'Switch to light mode' : 'Switch to dark mode';
+    btn.innerHTML = dark ? ICONS.sun : ICONS.moon;
+    btn.setAttribute('aria-label', label);
+    btn.title = label;
+    $('#theme-color')?.setAttribute('content', dark ? '#0f281d' : '#17402e');
+  }
+  applyTheme(store.get(THEME_KEY) === 'dark' ? 'dark' : 'light');
+  $('#theme').addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    store.set(THEME_KEY, next === 'dark' ? 'dark' : '');
+    applyTheme(next);
+  });
   $('#me').addEventListener('change', (e) => { me = e.target.value; store.set(ME_KEY, me); if (last) render(); });
 
   // Exposed for testing in Node.
