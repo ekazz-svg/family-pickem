@@ -729,7 +729,8 @@
         return `<td class="wk" title="${tie ? 'Tied for first' : 'Didn’t win'} · ${tip}"><span class="muted">–</span>${tie ? '<sup>*</sup>' : ''}</td>`;
       }).join('');
       return { name, W, L, trophies, played, pct: W + L ? W / (W + L) : 0, cells };
-    }).sort((a, b) => b.pct - a.pct || b.W - a.W || a.name.localeCompare(b.name));
+    // Most weeks won first; win % breaks ties (and orders everyone with no wins yet).
+    }).sort((a, b) => b.trophies - a.trophies || b.pct - a.pct || b.W - a.W || a.name.localeCompare(b.name));
     const anyTie = weeks.some((w) => w.tied.length);
     const live = weeks.find((w) => !w.done && !w.scoresMissing && w.week === last.sheet.week);
     const missing = weeks.filter((w) => w.scoresMissing).map((w) => w.week);
@@ -737,17 +738,17 @@
     const prov = weeks.filter((w) => w.provisional).map((w) => w.week);
     const body = rows.map((r) => `<tr class="${r.name === me ? 'me-row' : ''}">
         <th class="who gm">${esc(r.name)}</th>
+        <td class="num">${r.trophies ? '🏆'.repeat(r.trophies) : '<span class="muted">–</span>'}</td>
         <td class="num"><strong>${(r.pct * 100).toFixed(1)}%</strong></td>
         <td class="num">${r.W}-${r.L}</td>
-        <td class="num">${r.trophies ? '🏆'.repeat(r.trophies) : '<span class="muted">–</span>'}</td>
         ${r.cells}</tr>`).join('');
     return `<section class="card">
       <h2>Season bragging rights</h2>
       <div class="scroll"><table class="board season">
-        <thead><tr><th class="gm">Player</th><th class="num">Win %</th><th class="num">W-L</th><th class="num" title="Weeks won">🏆</th>${head}</tr></thead>
+        <thead><tr><th class="gm">Player</th><th class="num" title="Weeks won">🏆</th><th class="num">Win %</th><th class="num">W-L</th>${head}</tr></thead>
         <tbody>${body}</tbody>
       </table></div>
-      <p class="foot">Ranked by win %, so missing a week doesn't count against anyone. Every week is re-scored from the official final scores, not the sheet colors. 🏆 won the week, – didn't win, · didn't play.${live ? ` Wk ${live.week}* is still being played (…).` : ''}${missing.length ? ` Scores for Wk ${missing.join(', ')} didn't load; refresh to try again.` : ''}${anyTie ? ' <sup>*</sup> Tied for first, but the tiebreaker isn’t on record yet.' : ''}${prov.length ? ` † Wk ${prov.join(', ')} still needs to be double-checked against the sheet.` : ''}</p>
+      <p class="foot">Ranked by weeks won. Ties, and everyone without a win yet, are ordered by win %, so missing a week doesn't count against anyone. Every week is re-scored from the official final scores, not the sheet colors. 🏆 won the week, – didn't win, · didn't play.${live ? ` Wk ${live.week}* is still being played (…).` : ''}${missing.length ? ` Scores for Wk ${missing.join(', ')} didn't load; refresh to try again.` : ''}${anyTie ? ' <sup>*</sup> Tied for first, but the tiebreaker isn’t on record yet.' : ''}${prov.length ? ` † Wk ${prov.join(', ')} still needs to be double-checked against the sheet.` : ''}</p>
     </section>`;
   }
 
