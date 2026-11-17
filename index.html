@@ -289,6 +289,8 @@
   .grid td:first-of-type { border-radius: 0; }
   .me-col { box-shadow: inset 2px 0 0 var(--accent), inset -2px 0 0 var(--accent); }
   thead .me-col { color: var(--accent-ink); }
+  /* Body cells start with a 2px gap (their left border), so shift the header and Wins line to match. */
+  .grid thead .me-col, .grid tfoot .me-col { box-shadow: inset 2px 0 0 var(--surface), inset 4px 0 0 var(--accent), inset -2px 0 0 var(--accent); }
 
   .season th, .season td { white-space: nowrap; }
   .season td.num strong { font: 700 18px/1 var(--display); }
