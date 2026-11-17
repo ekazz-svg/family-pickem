@@ -246,13 +246,18 @@
   .team { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 16px; font-weight: 650; }
   .tname { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
   .abbr {
-    flex: none; display: inline-grid; place-items: center; width: 38px; height: 24px; border-radius: 6px;
-    font: 700 13px/1 var(--display); letter-spacing: .04em; background: var(--line); color: var(--ink-2);
+    flex: none; display: inline-grid; place-items: center; width: 40px; height: 26px; padding-bottom: 2px; border-radius: 6px;
+    font: 700 13px/1 var(--display); letter-spacing: .05em; background: var(--line); color: var(--ink-2);
   }
+  .abbr.colored {
+    background: var(--tc); color: var(--tt);
+    box-shadow: inset 0 -3px 0 var(--ts), inset 0 0 0 1px rgba(0,0,0,.06);
+  }
+  :root[data-theme="dark"] .abbr.colored { box-shadow: inset 0 -3px 0 var(--ts), inset 0 0 0 1px rgba(255,255,255,.14); }
   .score { font: 700 28px/1 var(--display); font-variant-numeric: tabular-nums; }
-  .side.won .abbr { background: var(--good-wash); color: var(--good-ink); }
   .side.lost .team { color: var(--muted); font-weight: 500; }
-  .side.lost .abbr { opacity: .6; }
+  .side.lost .abbr { filter: grayscale(1); opacity: .45; }
+  :root[data-theme="dark"] .side.lost .abbr { opacity: .6; }
   .side.leading .score { color: var(--good-ink); }
   .mark { margin-left: 2px; }
   .pickers { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; align-items: center; }

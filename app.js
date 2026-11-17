@@ -45,6 +45,30 @@
     TEN: ['Titans', 'Tennessee'],
     WSH: ['Commanders', 'Washington', 'WAS', 'Commies'],
   };
+  // Tile colors for each team: [background, text, stripe].
+  const TEAM_COLORS = {
+    ARI: ['#97233F', '#FFFFFF', '#FFB612'], ATL: ['#A71930', '#FFFFFF', '#000000'],
+    BAL: ['#241773', '#FFFFFF', '#9E7C0C'], BUF: ['#00338D', '#FFFFFF', '#C60C30'],
+    CAR: ['#0085CA', '#FFFFFF', '#101820'], CHI: ['#0B162A', '#FFFFFF', '#C83803'],
+    CIN: ['#FB4F14', '#000000', '#000000'], CLE: ['#311D00', '#FFFFFF', '#FF3C00'],
+    DAL: ['#003594', '#FFFFFF', '#869397'], DEN: ['#FB4F14', '#002244', '#002244'],
+    DET: ['#0076B6', '#FFFFFF', '#B0B7BC'], GB: ['#203731', '#FFB612', '#FFB612'],
+    HOU: ['#03202F', '#FFFFFF', '#A71930'], IND: ['#002C5F', '#FFFFFF', '#A2AAAD'],
+    JAX: ['#006778', '#FFFFFF', '#D7A22A'], KC: ['#E31837', '#FFFFFF', '#FFB81C'],
+    LV: ['#000000', '#A5ACAF', '#A5ACAF'], LAC: ['#0080C6', '#FFFFFF', '#FFC20E'],
+    LAR: ['#003594', '#FFD100', '#FFA300'], MIA: ['#008E97', '#FFFFFF', '#FC4C02'],
+    MIN: ['#4F2683', '#FFFFFF', '#FFC62F'], NE: ['#002244', '#FFFFFF', '#C60C30'],
+    NO: ['#101820', '#D3BC8D', '#D3BC8D'], NYG: ['#0B2265', '#FFFFFF', '#A71930'],
+    NYJ: ['#125740', '#FFFFFF', '#000000'], PHI: ['#004C54', '#FFFFFF', '#A5ACAF'],
+    PIT: ['#101820', '#FFB612', '#FFB612'], SF: ['#AA0000', '#FFFFFF', '#B3995D'],
+    SEA: ['#002244', '#FFFFFF', '#69BE28'], TB: ['#D50A0A', '#FFFFFF', '#34302B'],
+    TEN: ['#0C2340', '#FFFFFF', '#4B92DB'], WSH: ['#5A1414', '#FFB612', '#FFB612'],
+  };
+  const teamTile = (t) => {
+    const c = TEAM_COLORS[t];
+    const style = c ? ` style="--tc:${c[0]};--tt:${c[1]};--ts:${c[2]}"` : '';
+    return `<span class="abbr${c ? ' colored' : ''}"${style} aria-hidden="true">${esc(t)}</span>`;
+  };
   const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   const ALIAS = {};
   for (const [code, names] of Object.entries(TEAMS)) {
@@ -561,7 +585,7 @@
       const mark = won ? '<span class="mark good-ink" aria-label="won">✓</span>' : '';
       const showScore = g.state !== 'pre' && sc != null && !g.manual;
       return `<div class="side ${cls}">
-        <div class="team"><span class="tname"><span class="abbr" aria-hidden="true">${esc(t)}</span>${esc(teamName(t))}${mark}</span>${showScore ? `<span class="score">${sc}</span>` : ''}</div>
+        <div class="team"><span class="tname">${teamTile(t)}${esc(teamName(t))}${mark}</span>${showScore ? `<span class="score">${sc}</span>` : ''}</div>
         <div class="pickers">${names.length ? names.map(chip).join('') : '<span class="muted small">No one</span>'}<span class="count">${names.length}</span></div>
       </div>`;
     };
