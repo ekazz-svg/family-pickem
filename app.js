@@ -134,8 +134,8 @@
       }
       const g = { away, home, picks: {}, override: null };
       if (ovCol >= 0 && r[ovCol]) {
-        const o = teamCode(r[ovCol]);
-        if (o === away || o === home) g.override = o;
+        const o = /^tie[d]?$/i.test(r[ovCol]) ? 'TIE' : teamCode(r[ovCol]);
+        if (o === 'TIE' || o === away || o === home) g.override = o;
         else warnings.push(`Winner override “${r[ovCol]}” for ${teamName(away)} @ ${teamName(home)} isn't one of those two teams, so it's ignored.`);
       }
       people.forEach((p) => {
@@ -158,7 +158,8 @@
     const week = parseInt(settings.week, 10);
     const rule = /same/i.test(settings['tiebreaker rule'] || '') ? 'same' : 'closest';
     const tbTotal = parseFloat(settings['tiebreaker total']);
-    return { week: isNaN(week) ? null : week, rule, tbTotalOverride: isNaN(tbTotal) ? null : tbTotal, people: people.map((p) => p.name), games, guesses, warnings };
+    const weekWinner = (settings['week winner'] || '').split(/\s*(?:,|&|\band\b)\s*/i).filter(Boolean);
+    return { week: isNaN(week) ? null : week, rule, weekWinner, tbTotalOverride: isNaN(tbTotal) ? null : tbTotal, people: people.map((p) => p.name), games, guesses, warnings };
   }
 
   // ── Live scores (ESPN public scoreboard) ─────────────────────
@@ -207,8 +208,8 @@
         warnings.push(`${teamName(g.away)} @ ${teamName(g.home)} isn't on the NFL schedule for Week ${sheet.week}. Check the teams in that row.`);
       }
       if (g.override) {
-        m.winner = g.override;
-        m.tie = false;
+        m.winner = g.override === 'TIE' ? null : g.override;
+        m.tie = g.override === 'TIE';
         if (m.state !== 'post') { m.state = 'post'; m.manual = true; }
       }
       return m;
@@ -271,7 +272,7 @@
         if (f.length) set = f;
       }
       let outcome; // per person: 'win' | 'maybe' | 'lose'
-      if (set.length > 1 && tbTotal != null) {
+      if (set.length > 1 && tbTotal != null && set.every((p) => guesses[people[p]] != null)) {
         const d = set.map((p) => (guesses[people[p]] != null ? Math.abs(guesses[people[p]] - tbTotal) : Infinity));
         const best = Math.min(...d);
         set = set.filter((p, i) => d[i] === best);
@@ -299,6 +300,44 @@
         shareOfOutcomes: (r.win + r.maybe) / N,
       };
     });
+  }
+
+  function scoreWeek(sheet, events, liveOk) {
+    const merged = merge(sheet, events, liveOk);
+    const tb = merged.games[merged.games.length - 1];
+    const tbTotal = sheet.tbTotalOverride != null ? sheet.tbTotalOverride
+      : tb.state === 'post' && !tb.manual && tb.awayScore != null ? tb.awayScore + tb.homeScore : null;
+    const stats = score(sheet.people, merged.games);
+    const paths = analyze(sheet.people, merged.games, stats, sheet.rule, sheet.guesses, tbTotal);
+    return { ...merged, stats, paths, tbTotal };
+  }
+
+  // One line per week for the season table.
+  function summarize(sheet, r) {
+    const done = r.games.every((g) => g.state === 'post');
+    let winners = [], tied = [];
+    if (sheet.weekWinner.length) winners = sheet.weekWinner;
+    else if (done) {
+      winners = r.paths.filter((p) => p.clinched).map((p) => p.name);
+      if (!winners.length) tied = r.paths.filter((p) => p.alive).map((p) => p.name);
+    }
+    return { week: sheet.week, done, winners, tied, stats: r.stats };
+  }
+
+  // Finished weeks stored in the repo (listed in config.js). Loaded once.
+  let pastCache = null;
+  async function loadPast() {
+    if (pastCache) return pastCache;
+    const out = [];
+    for (const path of CFG.pastWeeks || []) {
+      try {
+        const r = await fetch(path, { cache: 'no-store' });
+        if (!r.ok) throw new Error(r.status);
+        out.push(parseSheet(parseCSV(await r.text())));
+      } catch { /* a missing week just drops out of the season table */ }
+    }
+    pastCache = out;
+    return out;
   }
 
   // ── State ────────────────────────────────────────────────────
@@ -335,13 +374,14 @@
           errors.push(`Live scores aren't loading right now (${e.message}). Results entered by hand in the sheet still count.`);
         }
       } else errors.push('Put the week number next to “Week” at the top of the sheet tab so live scores can load.');
-      const merged = merge(sheet, events, liveOk);
-      const tb = merged.games[merged.games.length - 1];
-      const tbTotal = sheet.tbTotalOverride != null ? sheet.tbTotalOverride
-        : tb.state === 'post' && !tb.manual && tb.awayScore != null ? tb.awayScore + tb.homeScore : null;
-      const stats = score(sheet.people, merged.games);
-      const paths = analyze(sheet.people, merged.games, stats, sheet.rule, sheet.guesses, tbTotal);
-      last = { sheet, ...merged, stats, paths, tbTotal, errors, warnings: [...sheet.warnings, ...merged.warnings], updated: new Date() };
+      const cur = scoreWeek(sheet, events, liveOk);
+      const past = await loadPast();
+      const season = past
+        .filter((p) => p.week !== sheet.week)
+        .map((p) => summarize(p, scoreWeek(p, [], false)))
+        .concat(sheet.week ? [summarize(sheet, cur)] : [])
+        .sort((a, b) => a.week - b.week);
+      last = { sheet, ...cur, season, errors, warnings: [...sheet.warnings, ...cur.warnings], updated: new Date() };
     } catch (e) {
       if (last) last.errors = [`Couldn't refresh: ${e.message}. Showing the last update.`];
       else last = { fatal: e.message, errors: [] };
@@ -389,7 +429,7 @@
     sel.innerHTML = opts.join('');
     if (me && !last.sheet.people.includes(me)) me = '';
 
-    $('#main').innerHTML = [renderHero(), renderBoard(), renderGames(), renderTiebreak(), renderGrid(), renderWarnings()].join('');
+    $('#main').innerHTML = [renderHero(), renderBoard(), renderGames(), renderTiebreak(), renderSeason(), renderGrid(), renderWarnings()].join('');
   }
 
   const chip = (name) => `<span class="chip${name === me ? ' me' : ''}">${esc(name)}</span>`;
@@ -570,6 +610,43 @@
         <tfoot><tr><th class="gm">Wins</th><td></td>${tot}</tr></tfoot>
       </table></div>
       <p class="foot">✓ right · ✕ wrong · ▲ winning now · ▼ losing now. Wins are counted from the actual scores, not cell colors.</p>
+    </section>`;
+  }
+
+  function renderSeason() {
+    const weeks = (last.season || []).filter((w) => w.week);
+    if (weeks.length < 2) return '';
+    const names = [];
+    weeks.forEach((w) => w.stats.forEach((s) => { if (!names.includes(s.name)) names.push(s.name); }));
+    const rows = names.map((name) => {
+      let W = 0, L = 0, trophies = 0, played = 0;
+      const cells = weeks.map((w) => {
+        const s = w.stats.find((x) => x.name === name);
+        if (!s || s.w + s.l + s.open === 0) return '<td class="num"><span class="muted">·</span></td>';
+        played++; W += s.w; L += s.l;
+        const won = w.winners.includes(name);
+        if (won) trophies++;
+        const tie = w.tied.includes(name);
+        return `<td class="num${won ? ' wk-win' : ''}">${s.w}${won ? ' 🏆' : tie ? '<sup>*</sup>' : ''}</td>`;
+      }).join('');
+      return { name, W, L, trophies, played, pct: W + L ? W / (W + L) : 0, cells };
+    }).sort((a, b) => b.pct - a.pct || b.W - a.W || a.name.localeCompare(b.name));
+    const anyTie = weeks.some((w) => w.tied.length);
+    const live = weeks.find((w) => !w.done);
+    const head = weeks.map((w) => `<th class="num">Wk ${w.week}${w.done ? '' : '*'}</th>`).join('');
+    const body = rows.map((r) => `<tr class="${r.name === me ? 'me-row' : ''}">
+        <th class="who gm">${esc(r.name)}</th>
+        <td class="num"><strong>${(r.pct * 100).toFixed(1)}%</strong></td>
+        <td class="num">${r.W}-${r.L}</td>
+        <td class="num">${r.trophies ? '🏆'.repeat(r.trophies) : '<span class="muted">–</span>'}</td>
+        ${r.cells}</tr>`).join('');
+    return `<section class="card">
+      <h2>Season bragging rights</h2>
+      <div class="scroll"><table class="board season">
+        <thead><tr><th class="gm">Player</th><th class="num">Win %</th><th class="num">W-L</th><th class="num" title="Weeks won">🏆</th>${head}</tr></thead>
+        <tbody>${body}</tbody>
+      </table></div>
+      <p class="foot">Ranked by win %, so missing a week doesn't count against anyone. Every week is re-scored from the official final scores, not the sheet colors. 🏆 = won the week. A dot means the player didn't play that week.${live ? ` Wk ${live.week}* is still being played.` : ''}${anyTie ? ' <sup>*</sup> Tied for first, but the tiebreaker isn’t on record yet.' : ''}</p>
     </section>`;
   }
 

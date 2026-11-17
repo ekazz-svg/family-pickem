@@ -4,6 +4,9 @@ A one-page website that shows this week's standings, live scores, who picked wha
 and who can still win. It reads the picks from a tab in the Google Sheet and the
 scores from ESPN, and refreshes itself every minute while games are on.
 
+Everything runs on free GitHub Pages. There's no server, no GitHub Actions and
+no API keys: each visitor's phone loads the picks and the ESPN scores directly.
+
 ## Each week (about 5 minutes, after picks lock)
 
 1. Open the **Dashboard** tab in the Google Sheet.
@@ -37,13 +40,26 @@ If something in the sheet can't be read, the page lists it under
 1. In the sheet: **File → Share → Publish to web**. Choose the **Dashboard** tab,
    choose **Comma-separated values (.csv)**, click **Publish**, and copy the link.
 2. In this repo, open `config.js`, click the pencil icon, paste the link between
-   the quotes on the `sheetCsvUrl` line, and commit.
+   the quotes on the `sheetCsvUrl` line, and commit. (Until then it can point
+   at a file in `weeks/`, like `weeks/week-10.csv`.)
 3. Repo **Settings → Pages**: Source = *Deploy from a branch*, Branch = `main`,
    folder = `/ (root)`. Save. The page appears at
    `https://<your-username>.github.io/<repo-name>/` within a minute or two.
 
 Until a sheet link is set, the page shows a Week 10 demo. Add `?demo` to the
 end of the address to see the demo any time.
+
+## Season standings
+
+Finished weeks live in the `weeks/` folder, one CSV per week, in the same layout
+as the Dashboard tab. The **Winner override** column holds the official winners
+(`Tie` for a tied game), and an optional `Week winner` row records who won a
+tied week on the tiebreaker. List each file under `pastWeeks` in `config.js`.
+
+When a week ends: in the sheet, **File → Download → Comma-separated values**
+for that week's tab, upload it to `weeks/` on GitHub (**Add file → Upload files**)
+as `week-NN.csv`, and add it to `pastWeeks`. The page scores it from the actual
+results either way. You can also ask Claude to do this step.
 
 ## Notes
 
