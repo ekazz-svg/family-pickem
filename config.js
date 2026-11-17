@@ -8,8 +8,10 @@ window.PICKEM_CONFIG = {
   // Leave it empty ("") to show the built-in demo.
   sheetCsvUrl: "weeks/week-10.csv",
 
-  // Finished weeks for the season table. Each file lists the picks and the
-  // official winners. Add each week's file here once it's over.
+  // Weeks for the season table: each file holds that week's picks. Results
+  // come from ESPN automatically (a filled-in "Winner override" column is used
+  // instead when present). The week being played now is skipped here and
+  // shown live, so it's fine for it to be on this list already.
   pastWeeks: [
     "weeks/week-01.csv",
     "weeks/week-02.csv",
@@ -19,6 +21,7 @@ window.PICKEM_CONFIG = {
     "weeks/week-06.csv",
     "weeks/week-07.csv",
     "weeks/week-08.csv",
+    "weeks/week-10.csv",
   ],
 
   // A tied NFL game counts as a correct pick for everyone (how the family

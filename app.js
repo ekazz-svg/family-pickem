@@ -387,6 +387,29 @@
     return out;
   }
 
+  async function fetchWeek(week) {
+    const u = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=2&week=${week}&dates=${CFG.season}`;
+    const r = await fetch(u, { cache: 'no-store' });
+    if (!r.ok) throw new Error(`status ${r.status}`);
+    return normalizeEspn(await r.json());
+  }
+
+  // Scores for a finished week. Weeks whose file already lists every winner
+  // don't need ESPN (returns null). Fully final weeks are fetched only once.
+  // Returns undefined if ESPN couldn't be reached.
+  const finalWeeks = {};
+  async function pastWeekEvents(sheet) {
+    if (sheet.games.every((g) => g.override)) return null;
+    if (finalWeeks[sheet.week]) return finalWeeks[sheet.week];
+    try {
+      const ev = await fetchWeek(sheet.week);
+      if (ev.length && ev.every((e) => e.state === 'post')) finalWeeks[sheet.week] = ev;
+      return ev;
+    } catch {
+      return undefined;
+    }
+  }
+
   // ── State ────────────────────────────────────────────────────
   let last = null;
   let me = store.get(ME_KEY) || '';
@@ -412,20 +435,17 @@
       if (DEMO) { events = demoEvents(); liveOk = true; }
       else if (sheet.week) {
         try {
-          const u = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=2&week=${sheet.week}&dates=${CFG.season}`;
-          const r = await fetch(u, { cache: 'no-store' });
-          if (!r.ok) throw new Error(`status ${r.status}`);
-          events = normalizeEspn(await r.json());
+          events = await fetchWeek(sheet.week);
           liveOk = true;
         } catch (e) {
           errors.push(`Live scores aren't loading right now (${e.message}). Results entered by hand in the sheet still count.`);
         }
       } else errors.push('Put the week number next to “Week” at the top of the sheet tab so live scores can load.');
       const cur = scoreWeek(sheet, events, liveOk);
-      const past = await loadPast();
+      const past = (await loadPast()).filter((p) => p.week !== sheet.week);
+      const pastEvents = await Promise.all(past.map(pastWeekEvents));
       const season = past
-        .filter((p) => p.week !== sheet.week)
-        .map((p) => summarize(p, scoreWeek(p, [], false)))
+        .map((p, i) => ({ ...summarize(p, scoreWeek(p, pastEvents[i] || [], !!pastEvents[i])), scoresMissing: pastEvents[i] === undefined }))
         .concat(sheet.week ? [summarize(sheet, cur)] : [])
         .sort((a, b) => a.week - b.week);
       last = { sheet, ...cur, season, errors, warnings: [...sheet.warnings, ...cur.warnings], updated: new Date() };
@@ -684,6 +704,7 @@
       const cells = weeks.map((w) => {
         const s = w.stats.find((x) => x.name === name);
         if (!s || s.w + s.l + s.open === 0) return '<td class="num"><span class="muted">·</span></td>';
+        if (w.scoresMissing) return '<td class="num"><span class="muted" title="Scores didn’t load">?</span></td>';
         played++; W += s.w; L += s.l;
         const won = w.winners.includes(name);
         if (won) trophies++;
@@ -693,7 +714,8 @@
       return { name, W, L, trophies, played, pct: W + L ? W / (W + L) : 0, cells };
     }).sort((a, b) => b.pct - a.pct || b.W - a.W || a.name.localeCompare(b.name));
     const anyTie = weeks.some((w) => w.tied.length);
-    const live = weeks.find((w) => !w.done);
+    const live = weeks.find((w) => !w.done && !w.scoresMissing && w.week === last.sheet.week);
+    const missing = weeks.filter((w) => w.scoresMissing).map((w) => w.week);
     const head = weeks.map((w) => `<th class="num">Wk ${w.week}${w.done ? '' : '*'}${w.provisional ? '†' : ''}</th>`).join('');
     const prov = weeks.filter((w) => w.provisional).map((w) => w.week);
     const body = rows.map((r) => `<tr class="${r.name === me ? 'me-row' : ''}">
@@ -708,7 +730,7 @@
         <thead><tr><th class="gm">Player</th><th class="num">Win %</th><th class="num">W-L</th><th class="num" title="Weeks won">🏆</th>${head}</tr></thead>
         <tbody>${body}</tbody>
       </table></div>
-      <p class="foot">Ranked by win %, so missing a week doesn't count against anyone. Every week is re-scored from the official final scores, not the sheet colors. 🏆 = won the week. A dot means the player didn't play that week.${live ? ` Wk ${live.week}* is still being played.` : ''}${anyTie ? ' <sup>*</sup> Tied for first, but the tiebreaker isn’t on record yet.' : ''}${prov.length ? ` † Wk ${prov.join(', ')} still needs to be double-checked against the sheet.` : ''}</p>
+      <p class="foot">Ranked by win %, so missing a week doesn't count against anyone. Every week is re-scored from the official final scores, not the sheet colors. 🏆 = won the week. A dot means the player didn't play that week.${live ? ` Wk ${live.week}* is still being played.` : ''}${missing.length ? ` Scores for Wk ${missing.join(', ')} didn't load; refresh to try again.` : ''}${anyTie ? ' <sup>*</sup> Tied for first, but the tiebreaker isn’t on record yet.' : ''}${prov.length ? ` † Wk ${prov.join(', ')} still needs to be double-checked against the sheet.` : ''}</p>
     </section>`;
   }
 

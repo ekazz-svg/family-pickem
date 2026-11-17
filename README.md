@@ -51,15 +51,20 @@ end of the address to see the demo any time.
 
 ## Season standings
 
-Finished weeks live in the `weeks/` folder, one CSV per week, in the same layout
-as the Dashboard tab. The **Winner override** column holds the official winners
-(`Tie` for a tied game), and an optional `Week winner` row records who won a
-tied week on the tiebreaker. List each file under `pastWeeks` in `config.js`.
+Each week's picks are kept as a CSV in the `weeks/` folder (same layout as the
+Dashboard tab) and listed under `pastWeeks` in `config.js`. **Results are pulled
+from ESPN automatically**, both for the live week and for every finished week,
+so nobody types in winners. The week being played now is shown live; once the
+sheet moves on to the next week, the previous one drops into the season table
+on its own.
 
-When a week ends: in the sheet, **File → Download → Comma-separated values**
-for that week's tab, upload it to `weeks/` on GitHub (**Add file → Upload files**)
-as `week-NN.csv`, and add it to `pastWeeks`. The page scores it from the actual
-results either way. You can also ask Claude to do this step.
+Optional extras in a week's file:
+- **Winner override** column: only if ESPN is wrong or unavailable (`Tie` for a tied game).
+- `Week winner` row: who won a tied week, if the tiebreaker guesses aren't in the file.
+- `Provisional,yes` row: marks a week as not yet double-checked (shown with †).
+
+The one thing to keep: each week's **picks**. When a new week starts, the old
+week's picks need to be saved as `weeks/week-NN.csv` (or ask Claude to do it).
 
 ## Notes
 
