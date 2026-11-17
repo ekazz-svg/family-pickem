@@ -703,20 +703,23 @@
       let W = 0, L = 0, trophies = 0, played = 0;
       const cells = weeks.map((w) => {
         const s = w.stats.find((x) => x.name === name);
-        if (!s || s.w + s.l + s.open === 0) return '<td class="num"><span class="muted">·</span></td>';
-        if (w.scoresMissing) return '<td class="num"><span class="muted" title="Scores didn’t load">?</span></td>';
+        if (!s || s.w + s.l + s.open === 0) return '<td class="wk" title="Didn’t play"><span class="muted">·</span></td>';
+        if (w.scoresMissing) return '<td class="wk"><span class="muted" title="Scores didn’t load">?</span></td>';
         played++; W += s.w; L += s.l;
         const won = w.winners.includes(name);
         if (won) trophies++;
+        const tip = `${s.w} right`;
+        if (won) return `<td class="wk wk-win" title="Won the week · ${tip}">🏆</td>`;
+        if (!w.done && !w.winners.length) return `<td class="wk" title="Still being played · ${tip} so far"><span class="muted">…</span></td>`;
         const tie = w.tied.includes(name);
-        return `<td class="num${won ? ' wk-win' : ''}">${s.w}${won ? ' 🏆' : tie ? '<sup>*</sup>' : ''}</td>`;
+        return `<td class="wk" title="${tie ? 'Tied for first' : 'Didn’t win'} · ${tip}"><span class="muted">–</span>${tie ? '<sup>*</sup>' : ''}</td>`;
       }).join('');
       return { name, W, L, trophies, played, pct: W + L ? W / (W + L) : 0, cells };
     }).sort((a, b) => b.pct - a.pct || b.W - a.W || a.name.localeCompare(b.name));
     const anyTie = weeks.some((w) => w.tied.length);
     const live = weeks.find((w) => !w.done && !w.scoresMissing && w.week === last.sheet.week);
     const missing = weeks.filter((w) => w.scoresMissing).map((w) => w.week);
-    const head = weeks.map((w) => `<th class="num">Wk ${w.week}${w.done ? '' : '*'}${w.provisional ? '†' : ''}</th>`).join('');
+    const head = weeks.map((w) => `<th class="wk">Wk ${w.week}${w.done ? '' : '*'}${w.provisional ? '†' : ''}</th>`).join('');
     const prov = weeks.filter((w) => w.provisional).map((w) => w.week);
     const body = rows.map((r) => `<tr class="${r.name === me ? 'me-row' : ''}">
         <th class="who gm">${esc(r.name)}</th>
@@ -730,7 +733,7 @@
         <thead><tr><th class="gm">Player</th><th class="num">Win %</th><th class="num">W-L</th><th class="num" title="Weeks won">🏆</th>${head}</tr></thead>
         <tbody>${body}</tbody>
       </table></div>
-      <p class="foot">Ranked by win %, so missing a week doesn't count against anyone. Every week is re-scored from the official final scores, not the sheet colors. 🏆 = won the week. A dot means the player didn't play that week.${live ? ` Wk ${live.week}* is still being played.` : ''}${missing.length ? ` Scores for Wk ${missing.join(', ')} didn't load; refresh to try again.` : ''}${anyTie ? ' <sup>*</sup> Tied for first, but the tiebreaker isn’t on record yet.' : ''}${prov.length ? ` † Wk ${prov.join(', ')} still needs to be double-checked against the sheet.` : ''}</p>
+      <p class="foot">Ranked by win %, so missing a week doesn't count against anyone. Every week is re-scored from the official final scores, not the sheet colors. 🏆 won the week, – didn't win, · didn't play.${live ? ` Wk ${live.week}* is still being played (…).` : ''}${missing.length ? ` Scores for Wk ${missing.join(', ')} didn't load; refresh to try again.` : ''}${anyTie ? ' <sup>*</sup> Tied for first, but the tiebreaker isn’t on record yet.' : ''}${prov.length ? ` † Wk ${prov.join(', ')} still needs to be double-checked against the sheet.` : ''}</p>
     </section>`;
   }
 
