@@ -127,7 +127,23 @@ Games with right picks that the sheet never colored: Bears @ Seahawks (Bears won
 
 ## Week 6
 
-Not checked yet: the screenshot came through too small to measure cell colors. Needs a full-size screenshot.
+Checked from a new screenshot, with cell colors measured from the pixels. The totals row equals the green cells for every player. Every pick was re-read from it, and one was wrong in the saved file: on Bears @ Falcons, **Bailey picked the Bears and Brennan picked the Falcons** (the file had them swapped). Fixed.
+
+Games with right picks that the sheet never colored: Cowboys @ Packers (Packers won); Commanders @ 49ers (49ers won). One more right pick was left white: **Cory's Saints** (Saints won at the Giants).
+
+| Player | Sheet total | Official | Difference |
+|---|---|---|---|
+| Alex | 5 | **7** | +2 (+2 from rows never colored) |
+| Bailey | 5 | **6** | +1 (+1 from rows never colored) |
+| Brennan | 6 | **7** | +1 (+1 from rows never colored) |
+| Cory | 4 | **7** | +3 (+2 from rows never colored, +1 Saints left white) |
+| Eric | 5 | **7** | +2 (+2 from rows never colored) |
+| Gregg | 4 | **6** | +2 (+2 from rows never colored) |
+| Kim | 8 | **10** | +2 (+2 from rows never colored) |
+| Tyler | 7 | **8** | +1 (+1 from rows never colored) |
+| Sam | 7 | **9** | +2 (+2 from rows never colored) |
+
+Kim wins the week outright with 10, so the tiebreaker isn't needed.
 
 ## Week 10
 
