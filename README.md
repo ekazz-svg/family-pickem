@@ -13,7 +13,12 @@ no API keys: each visitor's phone loads the picks and the ESPN scores directly.
 2. Change the number next to **Week**.
 3. Replace the game rows: **Away** team in column A, **Home** team in column B,
    then each person's pick in their column. Team names, nicknames or
-   abbreviations all work (Ravens, Baltimore, BAL, Niners, Jags…).
+   abbreviations all work (Ravens, Baltimore, BAL, Niners, Jags…). Each pick
+   cell has a dropdown with that game's two teams.
+   **Someone sitting the week out? Leave their column blank.** A column with no
+   picks counts as "didn't play", so they're left off that week instead of
+   getting 0 wins. Don't delete or rename columns; add a new player in the next
+   empty column.
 4. **Put the Monday night (tiebreaker) game in the last row.**
 5. Leave the **Tiebreaker** row blank for now.
 
@@ -38,8 +43,11 @@ If something in the sheet can't be read, the page lists it under
 | one row per game | leave **Winner override** blank unless live scores are down |
 | `Tiebreaker` | added Monday, only for the people still in the running: their guess at the Monday night combined score. Leave everyone else blank. |
 
-`sheet-template.csv` is Week 10 in this layout. Import it into the sheet with
-**File → Import → Upload → Insert new sheet(s)**, then rename the tab **Dashboard**.
+The sheet has a column for all 12 people who've played this season (everyone
+from Week 1, the biggest week). `sheet-template.csv` is the same layout with
+Week 11's games and no picks, in case the tab ever needs rebuilding: import it
+with **File → Import → Upload → Insert new sheet(s)**, then rename the tab
+**Dashboard**.
 
 ## One-time setup
 
