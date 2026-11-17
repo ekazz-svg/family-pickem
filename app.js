@@ -565,10 +565,10 @@
     const rows = stats
       .map((s, i) => ({ s, p: paths[i] }))
       .sort((a, b) => b.s.w - a.s.w || b.s.upNow - a.s.upNow || b.s.max - a.s.max || a.s.name.localeCompare(b.s.name));
+    // Ties share a place and the next score down gets the next number (1, 1, 2, 3).
     let rank = 0, prev = null;
-    const body = rows.map(({ s, p }, i) => {
-      const key = `${s.w}`;
-      if (key !== prev) { rank = i + 1; prev = key; }
+    const body = rows.map(({ s, p }) => {
+      if (s.w !== prev) { rank++; prev = s.w; }
       const live = anyLive ? `<td class="num live-col">${s.upNow ? `<span class="up">▲${s.upNow}</span>` : ''}${s.downNow ? ` <span class="down">▼${s.downNow}</span>` : ''}${!s.upNow && !s.downNow ? '<span class="muted">–</span>' : ''}</td>` : '';
       return `<tr class="${s.name === me ? 'me-row ' : ''}${p.alive ? '' : 'is-out'}">
         <td class="num rank"><span class="rk${rank === 1 ? ' r1' : ''}">${rank}</span></td>
