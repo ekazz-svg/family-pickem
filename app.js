@@ -698,7 +698,7 @@
     }).join('');
     const tot = stats.map((s) => `<td class="num${s.name === me ? ' me-col' : ''}"><strong>${s.w}</strong></td>`).join('');
     return `<section class="card">
-      <h2>Everyone's picks</h2>
+      <h2>Everyone's picks${sheet.week ? `: Week ${sheet.week}` : ''}</h2>
       <div class="scroll grid-wrap"><table class="grid">
         <thead><tr><th class="gm">Game</th><th>Winner</th>${head}</tr></thead>
         <tbody>${rows}</tbody>
