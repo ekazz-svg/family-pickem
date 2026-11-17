@@ -15,7 +15,13 @@ no API keys: each visitor's phone loads the picks and the ESPN scores directly.
    then each person's pick in their column. Team names, nicknames or
    abbreviations all work (Ravens, Baltimore, BAL, Niners, Jags…).
 4. **Put the Monday night (tiebreaker) game in the last row.**
-5. Fill in everyone's tiebreaker guess on the **Tiebreaker** row.
+5. Leave the **Tiebreaker** row blank for now.
+
+**Monday morning:** once you've told the people still in the running, put their
+tiebreaker guesses on the **Tiebreaker** row, under their names. Leave everyone
+else blank; the dashboard only lists the people with a guess. (If the dashboard
+is reading this week's file in `weeks/`, edit that file on GitHub, or ask Claude
+to add them.)
 
 That's it. The page picks up changes within about 5 minutes (Google's delay).
 If something in the sheet can't be read, the page lists it under
@@ -30,7 +36,7 @@ If something in the sheet can't be read, the page lists it under
 | `Tiebreaker total` | leave blank; only fill in if live scores are down and you need to settle the week |
 | `Away, Home, Winner override, Alex, Bailey, …` | header row: player names go across |
 | one row per game | leave **Winner override** blank unless live scores are down |
-| `Tiebreaker` | each person's guess for the Monday night combined score |
+| `Tiebreaker` | added Monday, only for the people still in the running: their guess at the Monday night combined score. Leave everyone else blank. |
 
 `sheet-template.csv` is Week 10 in this layout. Import it into the sheet with
 **File → Import → Upload → Insert new sheet(s)**, then rename the tab **Dashboard**.

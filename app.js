@@ -640,9 +640,12 @@
     const hasScore = tb.state !== 'pre' && tb.awayScore != null && !tb.manual;
     const total = tbTotal != null ? tbTotal : hasScore ? tb.awayScore + tb.homeScore : null;
     const final = tbTotal != null;
+    // Guesses only come from the people the commissioner says are still in the
+    // running on Monday morning, so list just them (usually 2 to 4 people).
     const rows = sheet.people
+      .filter((p) => sheet.guesses[p] != null)
       .map((p) => ({ p, guess: sheet.guesses[p], pick: tb.picks[p] }))
-      .sort((a, b) => (a.guess ?? 1e9) - (b.guess ?? 1e9));
+      .sort((a, b) => a.guess - b.guess);
     const body = rows.map((r) => {
       let off = '<span class="muted">–</span>';
       if (r.guess != null && total != null) {
@@ -655,13 +658,24 @@
     const ruleText = sheet.rule === 'same'
       ? 'If people are tied on wins, whoever picked the right winner of this game wins. If they picked the same winner, the closest guess at the combined score wins.'
       : 'If people are tied on wins, the closest guess at the combined score of this game wins.';
+    let table;
+    if (rows.length) table = `<div class="scroll"><table class="board">
+        <thead><tr><th>Player</th><th>Picked</th><th class="num">Guess</th><th class="num">${final ? 'Off by' : 'Points to go'}</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table></div>`;
+    else {
+      const clinched = last.paths.filter((p) => p.clinched).map((p) => p.name);
+      const running = last.paths.filter((p) => p.alive && !p.clinched).map((p) => p.name);
+      let note;
+      if (clinched.length) note = `Not needed this week: ${listNames(clinched)} ${clinched.length > 1 ? 'share' : 'has'} the win on picks alone.`;
+      else if (running.length >= 2 && running.length <= 6) note = `Still in the running: ${listNames(running)}. Their guesses go here once they're in on Monday.`;
+      else note = 'No guesses yet. On Monday morning, whoever is still in the running sends a guess, and they show up here.';
+      table = `<p class="muted">${esc(note)}</p>`;
+    }
     return `<section class="card">
       <h2>Tiebreaker: ${esc(teamName(tb.away))} @ ${esc(teamName(tb.home))}</h2>
       <p class="hero-num">${total != null ? `<strong>${total}</strong> <span class="muted">${final ? 'total points (final)' : 'points so far'}</span>` : `<span class="muted">${tb.state === 'pre' ? esc(kickoffText(tb.date) || 'Not started yet') : 'Score not available'}</span>`}</p>
-      <div class="scroll"><table class="board">
-        <thead><tr><th>Player</th><th>Picked</th><th class="num">Guess</th><th class="num">${final ? 'Off by' : 'Points to go'}</th></tr></thead>
-        <tbody>${body}</tbody>
-      </table></div>
+      ${table}
       <p class="foot"><b>Rule:</b> ${esc(ruleText)}</p>
     </section>`;
   }
