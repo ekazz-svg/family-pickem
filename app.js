@@ -552,12 +552,24 @@
       <div class="progress" role="img" aria-label="${esc(prog)}"><div class="segs">${segs}</div><span class="lbl">${esc(prog)}</span></div>`;
   }
 
+  // What each person needs ("Needs Commanders …") stays hidden until every game
+  // before Sunday night is final, so nobody tunes out the early games. Sunday
+  // night is the second-to-last game by kickoff (Monday night is last).
+  function kickoffOrder() {
+    return [...last.games].sort((a, b) => (new Date(a.date || 0) - new Date(b.date || 0)) || a.idx - b.idx);
+  }
+  function showPaths() {
+    const order = kickoffOrder();
+    return order.slice(0, Math.max(0, order.length - 2)).every((g) => g.state === 'post');
+  }
+
   function statusCell(path, s) {
     const finished = last.games.every((g) => g.state === 'post');
     if (path.clinched) return `<span class="badge good">🏆 ${finished ? 'Winner' : 'Clinched'}</span>`;
     if (!path.alive) return `<span class="badge out">✕ Out</span>`;
     if (finished) return `<span class="badge alive">⚖️ Tiebreaker</span>`;
     let need = '';
+    if (!showPaths()) return `<span class="badge alive"><span class="dot" aria-hidden="true"></span>Still alive</span>`;
     const tbNote = path.tbOnly ? ' + win the tiebreaker' : '';
     if (path.needs.length && path.needs.length <= 4) need = `Needs ${listNames(path.needs.map(teamName))}${tbNote}`;
     else if (path.needs.length) need = `Needs ${path.needs.length} specific results${tbNote}`;
@@ -591,7 +603,7 @@
         <thead><tr><th class="num">#</th><th>Player</th><th class="num">W-L</th>${anyLive ? '<th class="num" title="Picks winning / losing in games being played right now">Live</th>' : ''}<th class="num" title="Most wins still possible">Best</th><th>Status</th></tr></thead>
         <tbody>${body}</tbody>
       </table></div>
-      <p class="foot">W-L counts finished games. ${anyLive ? '<b>Live</b> shows picks winning ▲ or losing ▼ in games being played now. ' : ''}<b>Best</b> is the most wins still possible. “Still alive” means they can still win the week, checking every possible result of the games left${last.sheet.rule === 'same' ? ', with the tiebreaker rule below' : ''}.</p>
+      <p class="foot">W-L counts finished games. ${anyLive ? '<b>Live</b> shows picks winning ▲ or losing ▼ in games being played now. ' : ''}<b>Best</b> is the most wins still possible. “Still alive” means they can still win the week, checking every possible result of the games left${last.sheet.rule === 'same' ? ', with the tiebreaker rule below' : ''}.${showPaths() ? '' : ' What each person needs to win shows up once the Sunday afternoon games are final.'}</p>
     </section>`;
   }
 
