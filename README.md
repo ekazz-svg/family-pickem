@@ -87,5 +87,7 @@ week's picks need to be saved as `weeks/week-NN.csv` (or ask Claude to do it).
 - A tied NFL game counts as a wrong pick for everyone.
 - "Still alive" checks every possible result of the games left (and the tiebreaker
   rule) to see whether that person can still finish first.
+- What each person needs to win ("Needs Commanders…") stays hidden until every game
+  before Sunday night is final, so the early games stay fun to watch.
 - Live scores come from ESPN's public scoreboard, which is free but unofficial.
   If it stops working, use the **Winner override** column and the page still works.
