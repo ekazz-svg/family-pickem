@@ -524,13 +524,13 @@
       const maybes = paths.filter((p) => p.alive && !p.clinched).map((p) => p.name);
       if (winners.length) headline = `🏆 ${listNames(winners)} ${winners.length > 1 ? 'share' : 'wins'} Week ${last.sheet.week || ''}`;
       else headline = `${listNames(maybes)} tied. Tiebreaker needed`;
-      sub = `All ${games.length} games are final. ${listNames(leaders)} finished with ${top} wins.`;
+      sub = `All ${games.length} games are final. ${listNames(leaders)} finished with ${plural(top, 'win')}.`;
     } else if (done === 0 && live === 0) {
       const next = games.filter((g) => g.date).sort((a, b) => new Date(a.date) - new Date(b.date))[0];
       headline = `Week ${last.sheet.week || ''} hasn't started yet`;
       sub = next ? `First game: ${teamName(next.away)} @ ${teamName(next.home)}, ${kickoffText(next.date)}.` : `${games.length} games this week.`;
     } else {
-      headline = leaders.length === 1 ? `${leaders[0]} leads with ${top} wins` : `${listNames(leaders)} tied with ${top} wins`;
+      headline = leaders.length === 1 ? `${leaders[0]} leads with ${plural(top, 'win')}` : `${listNames(leaders)} tied with ${plural(top, 'win')}`;
       const bits = [`${done} of ${games.length} games final`];
       if (live) bits.push(`${plural(live, 'game')} live now`);
       const alive = paths.filter((p) => p.alive).length;
