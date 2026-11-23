@@ -329,6 +329,9 @@
         const d = set.map((p) => (guesses[people[p]] != null ? Math.abs(guesses[people[p]] - tbTotal) : Infinity));
         const best = Math.min(...d);
         set = set.filter((p, i) => d[i] === best);
+        // Equally close: the guess that didn't go over the final total wins.
+        const under = set.filter((p) => guesses[people[p]] <= tbTotal);
+        if (under.length) set = under;
         outcome = 'win';
       } else outcome = set.length === 1 ? 'win' : 'maybe';
       for (const p of set) {
@@ -674,8 +677,8 @@
       return `<tr class="${r.p === me ? 'me-row' : ''}"><td class="who">${esc(r.p)}</td><td>${r.pick ? esc(teamName(r.pick)) + pickMark : '<span class="muted">–</span>'}</td><td class="num">${r.guess ?? '<span class="muted">–</span>'}</td><td class="num">${off}</td></tr>`;
     }).join('');
     const ruleText = sheet.rule === 'same'
-      ? 'If people are tied on wins, whoever picked the right winner of this game wins. If they picked the same winner, the closest guess at the combined score wins.'
-      : 'If people are tied on wins, the closest guess at the combined score of this game wins.';
+      ? 'If people are tied on wins, whoever picked the right winner of this game wins. If they picked the same winner, the closest guess at the combined score wins.' + ' If two guesses are equally close, the one that didn’t go over wins.'
+      : 'If people are tied on wins, the closest guess at the combined score of this game wins. If two guesses are equally close, the one that didn’t go over wins.';
     let table;
     if (rows.length) table = `<div class="scroll"><table class="board">
         <thead><tr><th>Player</th><th>Picked</th><th class="num">Guess</th><th class="num">${final ? 'Off by' : 'Points to go'}</th></tr></thead>
