@@ -37,7 +37,7 @@ If something in the sheet can't be read, the page lists it under
 | Row | What goes in it |
 |---|---|
 | `Week` | the week number, e.g. `11` |
-| `Tiebreaker rule` | `closest` (closest combined score wins) or `same winner` (right Monday winner first, then closest) |
+| `Tiebreaker rule` | `closest` (closest combined score wins) or `same winner` (right Monday winner first, then closest). Either way, if two guesses are equally close, the one that didn't go over wins (score 50: 49 beats 51). |
 | `Tiebreaker total` | leave blank; only fill in if live scores are down and you need to settle the week |
 | `Away, Home, Winner override, Alex, Bailey, …` | header row: player names go across |
 | one row per game | leave **Winner override** blank unless live scores are down |
