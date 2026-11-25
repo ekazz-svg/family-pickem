@@ -6,7 +6,7 @@ window.PICKEM_CONFIG = {
   //   - the "Publish to web" CSV link for the Dashboard tab of the Google Sheet, or
   //   - a file in this repo's weeks/ folder, like "weeks/week-10.csv".
   // Leave it empty ("") to show the built-in demo.
-  sheetCsvUrl: "weeks/week-11.csv",
+  sheetCsvUrl: "weeks/week-12.csv",
 
   // Weeks for the season table: each file holds that week's picks. Results
   // come from ESPN automatically (a filled-in "Winner override" column is used
@@ -23,6 +23,7 @@ window.PICKEM_CONFIG = {
     "weeks/week-08.csv",
     "weeks/week-10.csv",
     "weeks/week-11.csv",
+    "weeks/week-12.csv",
   ],
 
   // A tied NFL game counts as a correct pick for everyone (how the family
