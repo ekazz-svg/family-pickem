@@ -351,7 +351,7 @@
   /* ── Holiday: Thanksgiving ──────────────────────────────── */
   /* Everything below only applies when <html data-holiday="thanksgiving">.
      Same field-green football page, with warm autumn accents on top. */
-  .leaves, .holiday-pill, .holiday-note { display: none; }
+  .turkey, .holiday-pill { display: none; }
   :root[data-holiday="thanksgiving"] {
     --page: #f6f0e4;
     --surface-2: #fbf7ef;
@@ -386,18 +386,19 @@
     background: linear-gradient(180deg, var(--harvest) 0 2px, transparent 2px 4px, var(--pumpkin) 4px 7px);
   }
   [data-holiday="thanksgiving"] .masthead > .wrap { position: relative; z-index: 1; }
-  [data-holiday="thanksgiving"] .leaves {
-    display: block; position: absolute; top: 0; right: 0; height: 100%; width: min(440px, 50%);
+  /* The mascot: a turkey in pads and a helmet, standing on the sideline stripes. */
+  [data-holiday="thanksgiving"] .hero { padding: 40px 210px 34px 0; }
+  [data-holiday="thanksgiving"] .turkey {
+    display: block; position: absolute; right: 0; bottom: 6px; height: 198px; width: auto;
     pointer-events: none; overflow: visible;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .28));
+    transform-origin: 50% 100%; animation: strut 3.2s ease-in-out infinite;
   }
-  .leaves .lf { transform-box: fill-box; transform-origin: 50% 0; animation: sway 7s ease-in-out infinite alternate; }
-  .leaves .l1 { fill: var(--pumpkin); opacity: .5; }
-  .leaves .l2 { fill: var(--harvest); opacity: .42; animation-duration: 9s; animation-delay: -3s; }
-  .leaves .l3 { fill: var(--cranberry); opacity: .5; animation-duration: 8s; animation-delay: -5s; }
-  .leaves .l4 { fill: var(--harvest); opacity: .38; animation-duration: 6s; animation-delay: -1s; }
-  .leaves .l5 { fill: var(--pumpkin); opacity: .34; animation-duration: 10s; animation-delay: -6s; }
-  @keyframes sway { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
-  @media (prefers-reduced-motion: reduce) { .leaves .lf { animation: none; } }
+  @keyframes strut {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    50% { transform: translateY(-3px) rotate(-1.5deg); }
+  }
+  @media (prefers-reduced-motion: reduce) { .turkey { animation: none !important; } }
 
   [data-holiday="thanksgiving"] .holiday-pill {
     display: inline-flex; align-items: center; gap: 5px;
@@ -410,7 +411,6 @@
   [data-holiday="thanksgiving"] .card h2::before {
     height: 18px; background: linear-gradient(180deg, var(--harvest), var(--pumpkin) 55%, var(--cranberry));
   }
-  [data-holiday="thanksgiving"] .holiday-note { display: inline; color: var(--ink-2); }
 
   /* Games played on Thanksgiving Day. */
   .tags { display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
@@ -418,25 +418,14 @@
   .game.turkey:not(.in) { border-color: color-mix(in srgb, var(--pumpkin) 35%, var(--line)); }
   .game.turkey:not(.in) { box-shadow: inset 0 3px 0 color-mix(in srgb, var(--pumpkin) 70%, transparent); }
 
-  /* Keep the headline clear of the leaves; on narrow screens the leaves step aside. */
-  [data-holiday="thanksgiving"] .hero h2 { max-width: 26ch; }
-  @media (max-width: 760px) {
-    [data-holiday="thanksgiving"] .leaves { display: none; }
+  @media (max-width: 560px) {
+    [data-holiday="thanksgiving"] .hero { padding: 20px 112px 18px 0; }
+    [data-holiday="thanksgiving"] .turkey { height: 122px; right: -6px; }
   }
 </style>
 </head>
 <body>
 <header class="masthead">
-  <svg class="leaves" viewBox="0 0 440 230" preserveAspectRatio="xMaxYMid slice" aria-hidden="true" focusable="false">
-    <defs>
-      <path id="leaf" d="M50 4 57 20 66 14 63 34 76 26 74 38 92 34 84 48 96 54 78 62 82 72 60 66 52 74 51.5 96 48.5 96 48 74 40 66 18 72 22 62 4 54 16 48 8 34 26 38 24 26 37 34 34 14 43 20Z"/>
-    </defs>
-    <g class="lf l1"><use href="#leaf" transform="translate(330 66) scale(.58) rotate(-18 50 50)"/></g>
-    <g class="lf l2"><use href="#leaf" transform="translate(252 138) scale(.42) rotate(24 50 50)"/></g>
-    <g class="lf l3"><use href="#leaf" transform="translate(392 150) scale(.36) rotate(-40 50 50)"/></g>
-    <g class="lf l4"><use href="#leaf" transform="translate(212 78) scale(.26) rotate(52 50 50)"/></g>
-    <g class="lf l5"><use href="#leaf" transform="translate(318 186) scale(.24) rotate(-8 50 50)"/></g>
-  </svg>
   <div class="wrap">
     <div class="top">
       <h1 class="brand"><span class="ball" aria-hidden="true">🏈</span><span id="league">Family Pick'em</span><span class="wk" id="week"></span><span class="holiday-pill"><span aria-hidden="true">🦃</span> Turkey Day</span></h1>
@@ -449,13 +438,72 @@
       </div>
     </div>
     <div id="hero" class="hero"><p class="sub">Loading…</p></div>
+    <svg class="turkey" viewBox="0 0 200 210" aria-hidden="true" focusable="false">
+      <!-- tail fan -->
+      <g stroke="#5a2f17" stroke-width="1.2">
+        <g transform="rotate(-78 100 120)"><ellipse cx="100" cy="72" rx="15" ry="48" fill="#d4641c"/><ellipse cx="100" cy="42" rx="8" ry="13" fill="#f2c46a" stroke="none"/></g>
+        <g transform="rotate(78 100 120)"><ellipse cx="100" cy="72" rx="15" ry="48" fill="#d4641c"/><ellipse cx="100" cy="42" rx="8" ry="13" fill="#f2c46a" stroke="none"/></g>
+        <g transform="rotate(-52 100 120)"><ellipse cx="100" cy="70" rx="16" ry="50" fill="#e3a72f"/><ellipse cx="100" cy="38" rx="8" ry="13" fill="#fbe3a8" stroke="none"/></g>
+        <g transform="rotate(52 100 120)"><ellipse cx="100" cy="70" rx="16" ry="50" fill="#e3a72f"/><ellipse cx="100" cy="38" rx="8" ry="13" fill="#fbe3a8" stroke="none"/></g>
+        <g transform="rotate(-26 100 120)"><ellipse cx="100" cy="68" rx="16" ry="52" fill="#a8322d"/><ellipse cx="100" cy="34" rx="8" ry="13" fill="#f2c46a" stroke="none"/></g>
+        <g transform="rotate(26 100 120)"><ellipse cx="100" cy="68" rx="16" ry="52" fill="#a8322d"/><ellipse cx="100" cy="34" rx="8" ry="13" fill="#f2c46a" stroke="none"/></g>
+        <g><ellipse cx="100" cy="66" rx="16" ry="52" fill="#d4641c"/><ellipse cx="100" cy="32" rx="8" ry="13" fill="#f2c46a" stroke="none"/></g>
+      </g>
+      <!-- legs + cleats -->
+      <g stroke="#e8952f" stroke-width="6" stroke-linecap="round"><path d="M89 178 87 199"/><path d="M111 178 113 199"/></g>
+      <rect x="74" y="197" width="22" height="9" rx="4.5" fill="#1d1d1f"/>
+      <rect x="104" y="197" width="22" height="9" rx="4.5" fill="#1d1d1f"/>
+      <path d="M77 206h3M83 206h3M89 206h3M107 206h3M113 206h3M119 206h3" stroke="#1d1d1f" stroke-width="2"/>
+      <!-- pants -->
+      <path d="M68 148 C66 176 76 188 92 187 L100 182 L108 187 C124 188 134 176 132 148 Z" fill="#e3a72f" stroke="#5a2f17" stroke-width="1.2"/>
+      <path d="M69 160 C70 172 74 180 80 184 M131 160 C130 172 126 180 120 184" stroke="#a8322d" stroke-width="3" fill="none"/>
+      <!-- neck -->
+      <rect x="91" y="80" width="18" height="22" rx="6" fill="#7a4a2a"/>
+      <!-- left wing on hip -->
+      <path d="M64 110 C44 116 38 144 56 158 C62 160 70 154 70 146 C66 136 68 124 72 116 Z" fill="#6b3f22" stroke="#4a2814" stroke-width="1.2"/>
+      <path d="M50 132 C54 140 58 146 62 150 M48 142 C52 148 56 152 60 155" stroke="#4a2814" stroke-width="1.2" fill="none"/>
+      <!-- jersey with shoulder pads -->
+      <path d="M58 118 C56 104 68 95 84 95 L116 95 C132 95 144 104 142 118 L136 156 C120 164 80 164 64 156 Z" fill="#f7f1e4" stroke="#5a2f17" stroke-width="1.2"/>
+      <path d="M61 108 C66 102 72 99 78 98 M60 114 C66 106 73 102 80 101" stroke="#a8322d" stroke-width="2.4" fill="none"/>
+      <path d="M139 108 C134 102 128 99 122 98 M140 114 C134 106 127 102 120 101" stroke="#a8322d" stroke-width="2.4" fill="none"/>
+      <path d="M88 95 L100 107 L112 95" stroke="#a8322d" stroke-width="4" fill="none" stroke-linejoin="round"/>
+      <text x="100" y="148" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="800" font-size="32" fill="#a8322d" stroke="#e3a72f" stroke-width="1" paint-order="stroke" id="turkey-num"></text>
+      <!-- raised wing with the football -->
+      <path d="M134 112 C150 106 160 88 160 70 C168 70 174 80 170 94 C164 110 152 122 140 126 Z" fill="#6b3f22" stroke="#4a2814" stroke-width="1.2"/>
+      <g transform="rotate(-38 162 56)">
+        <ellipse cx="162" cy="56" rx="21" ry="12" fill="#8a4b25" stroke="#4a2814" stroke-width="1.4"/>
+        <path d="M147 50 C149 54 149 58 147 62 M177 50 C175 54 175 58 177 62" stroke="#fff" stroke-width="2" fill="none"/>
+        <path d="M154 56 H170" stroke="#fff" stroke-width="1.8"/>
+        <path d="M157 53 v6 M160.5 53 v6 M164 53 v6 M167.5 53 v6" stroke="#fff" stroke-width="1.4"/>
+      </g>
+      <path d="M156 72 C158 64 164 62 168 66 C170 70 168 74 164 76 Z" fill="#6b3f22" stroke="#4a2814" stroke-width="1.2"/>
+      <!-- head + helmet -->
+      <circle cx="100" cy="62" r="27" fill="#a8322d" stroke="#5e1715" stroke-width="1.4"/>
+      <path d="M97 35.3 h6 V56 h-6 Z" fill="#e3a72f"/>
+      <ellipse cx="86" cy="46" rx="6" ry="3.5" transform="rotate(-35 86 46)" fill="#fff" opacity=".35"/>
+      <circle cx="78.5" cy="68" r="2.4" fill="#5e1715"/>
+      <circle cx="121.5" cy="68" r="2.4" fill="#5e1715"/>
+      <ellipse cx="100" cy="72" rx="16.5" ry="15" fill="#7a4a2a" stroke="#5e1715" stroke-width="1.2"/>
+      <!-- eyes, determined brows, eye black -->
+      <circle cx="93" cy="67" r="4.4" fill="#fff"/><circle cx="107" cy="67" r="4.4" fill="#fff"/>
+      <circle cx="94" cy="67.6" r="2.3" fill="#111"/><circle cx="106" cy="67.6" r="2.3" fill="#111"/>
+      <circle cx="94.8" cy="66.8" r=".8" fill="#fff"/><circle cx="106.8" cy="66.8" r=".8" fill="#fff"/>
+      <path d="M88 61.5 L97 63.5 M112 61.5 L103 63.5" stroke="#3a200f" stroke-width="2" stroke-linecap="round"/>
+      <rect x="89.5" y="73" width="7" height="2.4" rx="1" fill="#111"/><rect x="103.5" y="73" width="7" height="2.4" rx="1" fill="#111"/>
+      <!-- facemask -->
+      <path d="M76 74 C84 90 116 90 124 74" stroke="#d8dcdf" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M86 84 L88 75 M114 84 L112 75" stroke="#d8dcdf" stroke-width="2.4" stroke-linecap="round"/>
+      <!-- beak + wattle -->
+      <path d="M94.5 74.5 Q100 72.5 105.5 74.5 L100.6 82.5 Q100 83.4 99.4 82.5 Z" fill="#f0a030" stroke="#b86d12" stroke-width="1"/>
+      <path d="M102 78 C109 81 109 93 104 95 C99.5 93 100 85 102 78 Z" fill="#d93a2f" stroke="#8e1f18" stroke-width="1"/>
+    </svg>
   </div>
 </header>
 <div class="wrap">
   <div id="demo" class="banner" hidden><p><b>Demo.</b> <span id="demo-text"></span> Not connected to the Google Sheet yet.</p></div>
   <div id="errors" class="banner" hidden></div>
   <main id="main"></main>
-  <footer class="site"><span class="holiday-note">Happy Thanksgiving from the whole league. Save room for pie. </span>Scores update by themselves during games. Live scores from ESPN.</footer>
+  <footer class="site">Scores update by themselves during games. Live scores from ESPN.</footer>
 </div>
 <script src="demo.js"></script>
 <script src="app.js"></script>

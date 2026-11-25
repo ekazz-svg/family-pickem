@@ -506,6 +506,8 @@
     errBox.hidden = !last.errors.length;
     errBox.innerHTML = last.errors.map((e) => `<p>⚠️ ${esc(e)}</p>`).join('');
     $('#week').textContent = last.sheet.week ? `Week ${last.sheet.week}` : '';
+    const num = $('#turkey-num');
+    if (num) num.textContent = last.sheet.week || '';
     $('#updated').textContent = DEMO ? 'Demo data' : `Updated ${last.updated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
 
     const sel = $('#me');
