@@ -351,7 +351,7 @@
   /* ── Holiday: Thanksgiving ──────────────────────────────── */
   /* Everything below only applies when <html data-holiday="thanksgiving">.
      Same field-green football page, with warm autumn accents on top. */
-  .turkey, .holiday-pill { display: none; }
+  .mascot, .holiday-pill { display: none; }
   :root[data-holiday="thanksgiving"] {
     --page: #f6f0e4;
     --surface-2: #fbf7ef;
@@ -388,7 +388,7 @@
   [data-holiday="thanksgiving"] .masthead > .wrap { position: relative; z-index: 1; }
   /* The mascot: a turkey in pads and a helmet, standing on the sideline stripes. */
   [data-holiday="thanksgiving"] .hero { padding: 40px 210px 34px 0; }
-  [data-holiday="thanksgiving"] .turkey {
+  [data-holiday="thanksgiving"] .mascot {
     display: block; position: absolute; right: 0; bottom: 6px; height: 198px; width: auto;
     pointer-events: none; overflow: visible;
     filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .28));
@@ -398,7 +398,7 @@
     0%, 100% { transform: translateY(0) rotate(0); }
     50% { transform: translateY(-3px) rotate(-1.5deg); }
   }
-  @media (prefers-reduced-motion: reduce) { .turkey { animation: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .mascot { animation: none !important; } }
 
   [data-holiday="thanksgiving"] .holiday-pill {
     display: inline-flex; align-items: center; gap: 5px;
@@ -420,7 +420,7 @@
 
   @media (max-width: 560px) {
     [data-holiday="thanksgiving"] .hero { padding: 20px 112px 18px 0; }
-    [data-holiday="thanksgiving"] .turkey { height: 122px; right: -6px; }
+    [data-holiday="thanksgiving"] .mascot { height: 122px; right: -6px; }
   }
 </style>
 </head>
@@ -438,7 +438,7 @@
       </div>
     </div>
     <div id="hero" class="hero"><p class="sub">Loading…</p></div>
-    <svg class="turkey" viewBox="0 0 200 210" aria-hidden="true" focusable="false">
+    <svg class="mascot" viewBox="0 0 200 210" aria-hidden="true" focusable="false">
       <!-- tail fan -->
       <g stroke="#5a2f17" stroke-width="1.2">
         <g transform="rotate(-78 100 120)"><ellipse cx="100" cy="72" rx="15" ry="48" fill="#d4641c"/><ellipse cx="100" cy="42" rx="8" ry="13" fill="#f2c46a" stroke="none"/></g>
