@@ -11,12 +11,30 @@
 <meta name="apple-mobile-web-app-title" content="Pick'em">
 <meta name="description" content="Live standings for the family NFL pick'em league.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%88%3C/text%3E%3C/svg%3E">
+<script src="config.js"></script>
 <script>
   // Light by default. Dark only when someone picks it with the toggle (remembered on this device).
   (function () {
     var t = 'light';
     try { if (localStorage.getItem('pickem.theme') === 'dark') t = 'dark'; } catch (e) {}
     document.documentElement.setAttribute('data-theme', t);
+  })();
+  // Holiday look (see holidayTheme in config.js). Set before the page draws so it doesn't flash.
+  (function () {
+    var cfg = (window.PICKEM_CONFIG && window.PICKEM_CONFIG.holidayTheme) || 'auto';
+    var q = new URLSearchParams(location.search).get('holiday');
+    if (q) cfg = q; // ?holiday=thanksgiving or ?holiday=off to preview
+    var on = cfg === 'thanksgiving';
+    if (cfg === 'auto') {
+      // Thanksgiving is the 4th Thursday of November. Show it from that Monday
+      // through the Tuesday after (Monday night's game ends late).
+      var now = new Date(), y = now.getFullYear();
+      var nov1 = new Date(y, 10, 1).getDay();
+      var day = 1 + ((4 - nov1 + 7) % 7) + 21;
+      var start = new Date(y, 10, day - 3), end = new Date(y, 10, day + 6);
+      on = now >= start && now < end;
+    }
+    if (on) document.documentElement.setAttribute('data-holiday', 'thanksgiving');
   })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -329,13 +347,99 @@
     .board .stat { min-width: 0; }
     .board .rec strong { font-size: 22px; }
   }
+
+  /* ── Holiday: Thanksgiving ──────────────────────────────── */
+  /* Everything below only applies when <html data-holiday="thanksgiving">.
+     Same field-green football page, with warm autumn accents on top. */
+  .leaves, .holiday-pill, .holiday-note { display: none; }
+  :root[data-holiday="thanksgiving"] {
+    --page: #f6f0e4;
+    --surface-2: #fbf7ef;
+    --line: #ebe3d3;
+    --line-2: #ddd2bd;
+    --pumpkin: #d4641c;
+    --pumpkin-ink: #a2470d;
+    --pumpkin-wash: rgba(212, 100, 28, .12);
+    --cranberry: #a8322d;
+    --harvest: #e3a72f;
+  }
+  :root[data-holiday="thanksgiving"][data-theme="dark"] {
+    --page: #11120f;
+    --surface-2: #1d1f1a;
+    --line: #2a2c26;
+    --line-2: #383a32;
+    --pumpkin: #ec8a45;
+    --pumpkin-ink: #f5a66d;
+    --pumpkin-wash: rgba(236, 138, 69, .15);
+    --cranberry: #d0574f;
+    --harvest: #e9b445;
+  }
+  [data-holiday="thanksgiving"] .masthead {
+    background:
+      radial-gradient(120% 140% at 100% 0%, rgba(232, 140, 52, .26), transparent 55%),
+      repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), rgba(255,255,255,.055) calc(10% - 1px) 10%),
+      linear-gradient(180deg, var(--band-2), var(--band));
+  }
+  /* Jersey-sleeve stripes along the bottom edge of the field. */
+  [data-holiday="thanksgiving"] .masthead::after {
+    height: 7px;
+    background: linear-gradient(180deg, var(--harvest) 0 2px, transparent 2px 4px, var(--pumpkin) 4px 7px);
+  }
+  [data-holiday="thanksgiving"] .masthead > .wrap { position: relative; z-index: 1; }
+  [data-holiday="thanksgiving"] .leaves {
+    display: block; position: absolute; top: 0; right: 0; height: 100%; width: min(440px, 50%);
+    pointer-events: none; overflow: visible;
+  }
+  .leaves .lf { transform-box: fill-box; transform-origin: 50% 0; animation: sway 7s ease-in-out infinite alternate; }
+  .leaves .l1 { fill: var(--pumpkin); opacity: .5; }
+  .leaves .l2 { fill: var(--harvest); opacity: .42; animation-duration: 9s; animation-delay: -3s; }
+  .leaves .l3 { fill: var(--cranberry); opacity: .5; animation-duration: 8s; animation-delay: -5s; }
+  .leaves .l4 { fill: var(--harvest); opacity: .38; animation-duration: 6s; animation-delay: -1s; }
+  .leaves .l5 { fill: var(--pumpkin); opacity: .34; animation-duration: 10s; animation-delay: -6s; }
+  @keyframes sway { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+  @media (prefers-reduced-motion: reduce) { .leaves .lf { animation: none; } }
+
+  [data-holiday="thanksgiving"] .holiday-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font: 700 13px/1 var(--display); letter-spacing: .08em; padding: 5px 9px 4px; border-radius: 6px;
+    background: color-mix(in srgb, var(--pumpkin) 30%, transparent); color: var(--band-ink);
+    border: 1px solid color-mix(in srgb, var(--harvest) 55%, transparent);
+  }
+  [data-holiday="thanksgiving"] .holiday-pill span { font-size: 14px; }
+  [data-holiday="thanksgiving"] .hero .eyebrow .hol { color: #f2b766; }
+  [data-holiday="thanksgiving"] .card h2::before {
+    height: 18px; background: linear-gradient(180deg, var(--harvest), var(--pumpkin) 55%, var(--cranberry));
+  }
+  [data-holiday="thanksgiving"] .holiday-note { display: inline; color: var(--ink-2); }
+
+  /* Games played on Thanksgiving Day. */
+  .tags { display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .tag.turkey { background: var(--pumpkin-wash); color: var(--pumpkin-ink); }
+  .game.turkey:not(.in) { border-color: color-mix(in srgb, var(--pumpkin) 35%, var(--line)); }
+  .game.turkey:not(.in) { box-shadow: inset 0 3px 0 color-mix(in srgb, var(--pumpkin) 70%, transparent); }
+
+  /* Keep the headline clear of the leaves; on narrow screens the leaves step aside. */
+  [data-holiday="thanksgiving"] .hero h2 { max-width: 26ch; }
+  @media (max-width: 760px) {
+    [data-holiday="thanksgiving"] .leaves { display: none; }
+  }
 </style>
 </head>
 <body>
 <header class="masthead">
+  <svg class="leaves" viewBox="0 0 440 230" preserveAspectRatio="xMaxYMid slice" aria-hidden="true" focusable="false">
+    <defs>
+      <path id="leaf" d="M50 4 57 20 66 14 63 34 76 26 74 38 92 34 84 48 96 54 78 62 82 72 60 66 52 74 51.5 96 48.5 96 48 74 40 66 18 72 22 62 4 54 16 48 8 34 26 38 24 26 37 34 34 14 43 20Z"/>
+    </defs>
+    <g class="lf l1"><use href="#leaf" transform="translate(330 66) scale(.58) rotate(-18 50 50)"/></g>
+    <g class="lf l2"><use href="#leaf" transform="translate(252 138) scale(.42) rotate(24 50 50)"/></g>
+    <g class="lf l3"><use href="#leaf" transform="translate(392 150) scale(.36) rotate(-40 50 50)"/></g>
+    <g class="lf l4"><use href="#leaf" transform="translate(212 78) scale(.26) rotate(52 50 50)"/></g>
+    <g class="lf l5"><use href="#leaf" transform="translate(318 186) scale(.24) rotate(-8 50 50)"/></g>
+  </svg>
   <div class="wrap">
     <div class="top">
-      <h1 class="brand"><span class="ball" aria-hidden="true">🏈</span><span id="league">Family Pick'em</span><span class="wk" id="week"></span></h1>
+      <h1 class="brand"><span class="ball" aria-hidden="true">🏈</span><span id="league">Family Pick'em</span><span class="wk" id="week"></span><span class="holiday-pill"><span aria-hidden="true">🦃</span> Turkey Day</span></h1>
       <div class="controls">
         <label for="me">I'm</label>
         <select id="me" aria-label="Highlight my picks"></select>
@@ -351,9 +455,8 @@
   <div id="demo" class="banner" hidden><p><b>Demo.</b> <span id="demo-text"></span> Not connected to the Google Sheet yet.</p></div>
   <div id="errors" class="banner" hidden></div>
   <main id="main"></main>
-  <footer class="site">Scores update by themselves during games. Live scores from ESPN.</footer>
+  <footer class="site"><span class="holiday-note">Happy Thanksgiving from the whole league. Save room for pie. </span>Scores update by themselves during games. Live scores from ESPN.</footer>
 </div>
-<script src="config.js"></script>
 <script src="demo.js"></script>
 <script src="app.js"></script>
 </body>

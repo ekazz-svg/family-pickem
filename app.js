@@ -8,6 +8,8 @@
   const QS = new URLSearchParams(location.search);
   const DEMO = QS.has('demo') || !CFG.sheetCsvUrl;
   const ME_KEY = 'pickem.me';
+  // Set in index.html from holidayTheme in config.js.
+  const THANKSGIVING = document.documentElement.getAttribute('data-holiday') === 'thanksgiving';
 
   // ── Teams ────────────────────────────────────────────────────
   // code: [nickname, city, ...other spellings people might type]
@@ -119,6 +121,11 @@
     if (arr.length <= 1) return arr.join('');
     if (arr.length === 2) return arr.join(' and ');
     return arr.slice(0, -1).join(', ') + ' and ' + arr[arr.length - 1];
+  }
+  // The 4th Thursday of November, in the viewer's time zone.
+  function isThanksgiving(iso) {
+    const d = iso ? new Date(iso) : null;
+    return !!d && !isNaN(d) && d.getMonth() === 10 && d.getDay() === 4 && d.getDate() >= 22;
   }
   function kickoffText(iso) {
     if (!iso) return '';
@@ -550,7 +557,7 @@
     const segs = order.map((g) => `<span class="seg ${g.state}" title="${esc(g.away)} @ ${esc(g.home)}"></span>`).join('');
     const prog = `${done} of ${games.length} final${live ? ` · ${live} live` : ''}`;
     const eyebrow = left === 0 ? 'Final results' : live ? 'Live now' : done === 0 ? 'Up next' : 'In progress';
-    return `<p class="eyebrow">${eyebrow}</p>
+    return `<p class="eyebrow">${THANKSGIVING ? '<span class="hol">Thanksgiving week</span> · ' : ''}${eyebrow}</p>
       <h2>${esc(headline)}</h2><p class="sub">${esc(sub)}</p>
       <div class="progress" role="img" aria-label="${esc(prog)}"><div class="segs">${segs}</div><span class="lbl">${esc(prog)}</span></div>`;
   }
@@ -630,8 +637,10 @@
         <div class="pickers">${names.length ? names.map(chip).join('') : '<span class="muted small">No one</span>'}<span class="count">${names.length}</span></div>
       </div>`;
     };
-    return `<article class="game ${g.state}${me && g.picks[me] ? '' : ''}">
-      <header><span class="gstatus">${status}</span>${tbGame ? '<span class="tag">Tiebreaker game</span>' : ''}</header>
+    const turkey = THANKSGIVING && isThanksgiving(g.date);
+    const tags = (turkey ? '<span class="tag turkey"><span aria-hidden="true">🦃</span> Thanksgiving</span>' : '') + (tbGame ? '<span class="tag">Tiebreaker game</span>' : '');
+    return `<article class="game ${g.state}${turkey ? ' turkey' : ''}">
+      <header><span class="gstatus">${status}</span>${tags ? `<span class="tags">${tags}</span>` : ''}</header>
       ${side(g.away, g.awayScore)}
       ${side(g.home, g.homeScore)}
     </article>`;

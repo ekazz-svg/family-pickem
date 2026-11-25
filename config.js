@@ -36,4 +36,10 @@ window.PICKEM_CONFIG = {
 
   // Name shown at the top of the page.
   leagueName: "Family Pick'em",
+
+  // Holiday look. "auto" turns on the Thanksgiving touches (autumn colors,
+  // a few leaves, Turkey Day tags on the Thursday games) for Thanksgiving
+  // week only, Monday through the Tuesday after, then goes back to normal by
+  // itself. "thanksgiving" keeps it on; "off" never shows it.
+  holidayTheme: "auto",
 };
